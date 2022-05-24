@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=katadzuke-db
+      - MYSQL_USER=katadzuke
+      - MYSQL_PASSWORD=abcabc
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/katadzuke-score
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+  front:
+    build:
+      context: ./frontend
+    command: "npm run serve"
+    volumes:
+      - .:/katadzuke-score
+    ports:
+      - "8080:8080"
+    tty: true
