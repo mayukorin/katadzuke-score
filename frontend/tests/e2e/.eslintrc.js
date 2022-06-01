@@ -6,10 +6,10 @@ module.exports = {
   },
   rules: {
     strict: "off",
-    'vue/multi-word-component-names': [
-      'error',
+    "vue/multi-word-component-names": [
+      "error",
       {
-          ignores: ['default'],
+        ignores: ["default"],
       },
     ],
   },
