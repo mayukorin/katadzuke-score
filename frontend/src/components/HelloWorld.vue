@@ -1,41 +1,21 @@
 <template>
-  <v-card class="mx-auto overflow-hidden" height="400">
-    <v-app-bar color="deep-purple" dark>
-      <v-app-bar-nav-icon @click="drawer = true"></v-app-bar-nav-icon>
-
-      <v-toolbar-title>Title</v-toolbar-title>
-    </v-app-bar>
-
-    <v-navigation-drawer v-model="drawer" absolute temporary>
-      <v-list nav dense>
-        <v-list-item-group
-          v-model="group"
-          active-class="deep-purple--text text--accent-4"
-        >
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon>mdi-home</v-icon>
-            </v-list-item-icon>
-            <v-list-item-title>Home</v-list-item-title>
-          </v-list-item>
-
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon>mdi-account</v-icon>
-            </v-list-item-icon>
-            <v-list-item-title>Account</v-list-item-title>
-          </v-list-item>
-        </v-list-item-group>
-      </v-list>
-    </v-navigation-drawer>
-  </v-card>
+  <v-container class="mx-4">
+    <v-row justify="center">
+      <v-col cols="8" md="4">
+        <RoomPhotoCard />
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
-/* eslint-disable */
+import RoomPhotoCard from "@/components/organisms/RoomPhotoCard";
+
 export default {
   name: "HelloWorld",
-
+  components: {
+    RoomPhotoCard,
+  },
   data: () => ({
     drawer: false,
     ecosystem: [

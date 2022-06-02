@@ -1,5 +1,5 @@
 import Vue from "vue";
-import Vuetify from "vuetify/lib/framework";
+import Vuetify from "vuetify/lib";
 
 Vue.use(Vuetify);
 
@@ -11,5 +11,6 @@ export default new Vuetify({
         accent: "#ff9800",
       },
     },
+    options: { customProperties: true, variations: false },
   },
 });

@@ -5,6 +5,9 @@ module.exports = defineConfig({
   indexPath: "../templates/index.html",
   publicPath: process.env.NODE_ENV === "production" ? "/static" : "/",
   configureWebpack: {
-    watch: true,
+    watchOptions: {
+      aggregateTimeout: 300,
+      poll: 1000,
+    },
   },
 });
