@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'djoser',
+    'corsheaders',
     'katadzuke_app_v1.apps.KatadzukeAppV1Config'
 ]
 
@@ -125,3 +126,9 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # AUTH_MODEL
 AUTH_USER_MODEL = 'katadzuke_app_v1.User'
+
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8080',
+    'http://127.0.0.1:8080'
+]
