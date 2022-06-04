@@ -122,3 +122,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+# AUTH_MODEL
+AUTH_USER_MODEL = 'katadzuke_app_v1.User'
