@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractUser
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Create your models here.
 class UserManager(BaseUserManager):
@@ -46,3 +47,10 @@ class User(AbstractUser):
     REQUIRED_FIELDS = [
         "username",
     ]
+
+class RoomPhoto(models.Model):
+
+    filming_date = models.DateField()
+    photo_url = models.CharField(max_length=255)
+    room_owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    percent_of_floors = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])

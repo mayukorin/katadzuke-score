@@ -3,14 +3,36 @@
     <v-carousel v-model="photoIndex" class="my-4" :height="cardHeight + 60">
       <v-carousel-item>
         <div ref="roomPhotoCard0" class="ok">
-          <v-card height="100%">
+          <v-card height="100%" flat>
             <div>
               <v-card-title class="text-h6 mt-2 mx-2" @click="search()">
                 6/2 (木)
               </v-card-title>
-              <v-card-text class="text-h5"> 100点 </v-card-text>
+              <v-card-text class="text-h5">
+                <v-progress-circular
+                  indeterminate
+                  color="primary"
+                ></v-progress-circular>
+                点
+              </v-card-text>
+              <input
+                style="display: none"
+                ref="input"
+                type="file"
+                @change="selectedFile()"
+              />
+              <FloatingActionButton @click="handleClick()" :smallFlag="true">
+                <v-icon dark> mdi-camera </v-icon>
+                <span class="ml-1"> 部屋の写真変更 </span>
+              </FloatingActionButton>
             </div>
-            <v-img :src="url1" aspect-ratio="0.7" contain class="top-0 mb-1" />
+            <div class="text-center aspect d-flex align-center justify-center">
+              <v-progress-circular
+                indeterminate
+                color="primary"
+                size="70"
+              ></v-progress-circular>
+            </div>
           </v-card>
         </div>
       </v-carousel-item>
@@ -22,6 +44,10 @@
                 6/2 (木)
               </v-card-title>
               <v-card-text class="text-h5"> 100点 </v-card-text>
+              <FloatingActionButton @click="handleClick()" :smallFlag="true">
+                <v-icon dark> mdi-cloud-upload </v-icon>
+                部屋の写真をアップロード
+              </FloatingActionButton>
             </div>
             <v-img :src="url1" aspect-ratio="0.7" contain class="top-0 mb-1" />
           </v-card>
@@ -31,11 +57,14 @@
   </div>
 </template>
 <script>
-// import Appbar from "@/components/organisms/Appbar";
 import ResizeObserver from "resize-observer-polyfill";
+import FloatingActionButton from "@/components/atoms/FloatingActionButton.vue";
 
 export default {
   name: "RoomPhotoCard",
+  components: {
+    FloatingActionButton,
+  },
   data() {
     return {
       drawer: false,
@@ -43,6 +72,7 @@ export default {
       url2: "https://cdn.vuetifyjs.com/images/cards/cooking.png",
       photoIndex: 0,
       cardHeight: 0,
+      uploadingFlag: false,
     };
   },
   computed: {
@@ -53,6 +83,30 @@ export default {
   methods: {
     search() {
       console.log(this.$refs.roomPhotoCard2.getBoundingClientRect().height);
+    },
+    handleClick() {
+      this.$refs.input.click();
+    },
+    async selectedFile() {
+      if (!this.uploadingFlag) {
+        this.uploadingFlag = true;
+        console.log("selected file");
+        let file = this.$refs.input.files[0];
+        if (file != null) {
+          console.log(file);
+          let reader = new FileReader();
+          reader.onload = (event) => {
+            let base64Text = event.currentTarget.result;
+            return this.$store
+              .dispatch("roomPhotos/upload", { roomPhoto: base64Text })
+              .finally(() => {
+                this.uploadingFlag = false;
+              });
+          };
+          reader.readAsDataURL(file);
+        }
+        this.uploadingFlag = true;
+      }
     },
   },
   mounted() {
@@ -90,5 +144,9 @@ export default {
 <style scoped>
 .top-0 {
   margin-top: 0px !important;
+}
+
+.aspect {
+  aspect-ratio: 7 / 10;
 }
 </style>

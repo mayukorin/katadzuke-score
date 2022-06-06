@@ -1,7 +1,7 @@
 <template>
   <v-container class="mx-4">
     <v-row justify="center">
-      <v-col cols="8" md="4">
+      <v-col cols="9" md="4">
         <RoomPhotoCard />
       </v-col>
     </v-row>
