@@ -30,7 +30,10 @@
         <span>ログアウト</span>
         <v-icon right>mdi-exit-to-app</v-icon>
       </v-btn>
-      <v-btn v-else text color="white" @click="signin">
+      <v-btn v-else text color="white" @click="signup">
+        <span>新規登録</span>
+      </v-btn>
+      <v-btn v-if="!isSignIn" text color="white" @click="signin">
         <span>ログイン</span>
         <v-icon right>mdi-exit-to-app</v-icon>
       </v-btn>
@@ -81,6 +84,7 @@ export default {
     setSnacTrue: function () {
       this.snac = true;
     },
+    // 後でまとめる
     signout() {
       this.$store.dispatch("auth/signout");
       this.$store.dispatch("flashMessage/setSuccessMessage", {
@@ -90,6 +94,9 @@ export default {
     },
     signin() {
       this.$router.replace("/sign-in");
+    },
+    signup() {
+      this.$router.replace("/sign-up");
     },
     handleDrawer() {
       this.$emit("handle-drawer");
