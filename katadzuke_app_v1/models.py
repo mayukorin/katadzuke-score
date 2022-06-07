@@ -2,6 +2,7 @@ from django.db import models
 from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import BaseUserManager, AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
+import datetime
 
 # Create your models here.
 class UserManager(BaseUserManager):
@@ -11,6 +12,27 @@ class UserManager(BaseUserManager):
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
+
+        today = datetime.date.today()
+
+        # RoomPhotoとの結合度が高くなってしまい，良くない？
+        for add_day in range(7):
+            date = today + datetime.timedelta(days=add_day)
+            room_photo = RoomPhoto()
+            room_photo.filming_date = date 
+            room_photo.room_owner = user 
+            room_photo.save()
+            print(date)
+            print(date.weekday())
+
+            if date.weekday() >= 6:
+                # 日曜日まで作ったら終わり
+                break
+
+        reward, created = Reward.objects.get_or_create(month=today.month, recipient=user)
+        reward.amount_of_money = 0
+        reward.save()
+
         return user
 
     def create_user(self, email, password=None, **extra_fields):
