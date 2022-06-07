@@ -9,17 +9,26 @@ const authModule = {
   state: {
     email: "",
     username: "",
-    isLoggedIn: false,
+    isSignIn: false,
+    // TODO: 動的に変化
+    threshouldRewardScore: 60,
+    threshouldFineScore: 20,
+    AmountOfReward: 100,
+    AmountOfFine: 200,
+    rewardThisMonth: 0,
   },
   mutations: {
     set(state, payload) {
       state.email = payload.user.email;
       state.username = payload.user.username;
-      state.isLoggedIn = true;
+      state.isSignIn = true;
+    },
+    setRewardThisMonth(state, payload) {
+      state.rewardThisMonth = payload.amount_of_money;
     },
     clear(state) {
       (state.email = ""), (state.username = "");
-      state.isLoggedIn = false;
+      state.isSignIn = false;
     },
   },
   actions: {
@@ -31,7 +40,8 @@ const authModule = {
         })
         .then((response) => {
           localStorage.setItem("access", response.data.access);
-          return context.dispatch("renew");
+          context.dispatch("renew");
+          return context.dispatch("getRewardThisMonth");
         });
     },
     signup(context, payload) {
@@ -40,11 +50,7 @@ const authModule = {
       return api({
         method: "post",
         url: "/signup/",
-        data: {
-          email: payload.email,
-          password: payload.password,
-          username: payload.username,
-        },
+        data: payload,
       }).then((response) => {
         // 作成したアカウントを使ってログイン処理もする
         return context.dispatch("signin", {
@@ -59,27 +65,110 @@ const authModule = {
         context.commit("set", { user: user });
       });
     },
-    logout(context) {
-      // token をリフレッシュするため，1 回削除
+    signout(context) {
       localStorage.removeItem("access");
-      context.commit("clear");
+      context.commit("reset");
+    },
+    getRewardThisMonth(context) {
+      return api.get("/reward-this-month/").then((response) => {
+        console.log(response.data);
+        context.commit("setRewardThisMonth", response.data);
+        return response.data;
+      });
     },
   },
 };
 
 const roomPhotoModule = {
   namespaced: true,
+  state: {
+    roomPhotos: [],
+  },
+  mutations: {
+    set(state, payload) {
+      state.roomPhotos = payload.roomPhotos;
+    },
+    setRoomPhoto(state, payload) {
+      console.log("setRoomPhoto");
+      console.log(payload);
+      let roomPhoto = state.roomPhotos.find(
+        (roomPhoto) => roomPhoto.pk == payload.pk
+      );
+      roomPhoto.photo_url = payload.photo_url;
+      roomPhoto.percent_of_floors = payload.percent_of_floors;
+    },
+    clear(state) {
+      state.roomPhotos = [];
+    },
+  },
   actions: {
     upload(context, payload) {
       console.log(payload);
       console.log(process.env.VUE_APP_ROOT_API);
       return api({
         method: "post",
-        url: "/room-photo-upload/",
-        data: payload,
+        url: "/room-photos/" + payload.roomPhotoPk + "/room-photo-upload/",
+        data: {
+          roomPhotoBase64Content: payload.roomPhotoBase64Content,
+        },
+      }).then((response) => {
+        context.commit("setRoomPhoto", response.data);
+        return response.data;
+      });
+    },
+    list(context) {
+      return api({
+        method: "get",
+        url: "/room-photos/",
       }).then((response) => {
         console.log(response);
+        context.commit("set", { roomPhotos: response.data });
       });
+    },
+  },
+};
+
+const flashMessageModule = {
+  namespaced: true,
+  state: {
+    messages: [],
+    color: "",
+  },
+  mutations: {
+    set(state, payload) {
+      if (payload.error) {
+        state.messages = payload.error;
+        state.color = "error";
+      } else if (payload.warning) {
+        state.messages = payload.warning;
+        state.color = "accent";
+      } else if (payload.success) {
+        state.messages = payload.success;
+        state.color = "primaryDark";
+      }
+    },
+    clear(state) {
+      state.messages = [];
+      state.color = "";
+    },
+  },
+  actions: {
+    setErrorMessage(context, payload) {
+      context.commit("clear");
+      console.log("actions");
+      console.log(payload.message);
+      context.commit("set", { error: payload.messages });
+    },
+    setWarningMessages(context, payload) {
+      context.commit("clear");
+      context.commit("set", { warning: payload.messages });
+    },
+    setSuccessMessage(context, payload) {
+      context.commit("clear");
+      context.commit("set", { success: payload.messages });
+    },
+    clearMessages(context) {
+      context.commit("clear");
     },
   },
 };
@@ -88,6 +177,7 @@ const store = new Vuex.Store({
   modules: {
     roomPhotos: roomPhotoModule,
     auth: authModule,
+    flashMessage: flashMessageModule,
   },
 });
 

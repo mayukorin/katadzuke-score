@@ -28,6 +28,10 @@ export default {
         .dispatch("auth/signup", userInfo)
         .then(() => {
           console.log("signin and login succeeded.");
+          let signUpSuccessMessage = "アカウント登録が完了しました";
+          this.$store.dispatch("flashMessage/setSuccessMessage", {
+            messages: [signUpSuccessMessage],
+          });
           const next = "/";
           this.$router.replace(next);
         })

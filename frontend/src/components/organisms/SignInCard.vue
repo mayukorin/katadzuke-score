@@ -27,8 +27,10 @@ export default {
       return this.$store
         .dispatch("auth/signin", authInfo)
         .then(() => {
-          // ログインフラッシュメッセージを追加予定
-
+          let signInSuccessMessage = "ログインしました";
+          this.$store.dispatch("flashMessage/setSuccessMessage", {
+            messages: [signInSuccessMessage],
+          });
           const next = this.$route.query.next || "/";
           this.$router.replace(next);
         })

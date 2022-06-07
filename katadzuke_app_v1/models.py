@@ -1,4 +1,5 @@
 from django.db import models
+from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import BaseUserManager, AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -51,6 +52,14 @@ class User(AbstractUser):
 class RoomPhoto(models.Model):
 
     filming_date = models.DateField()
-    photo_url = models.CharField(max_length=255)
+    photo_url = models.CharField(null=True, blank=True, max_length=255)
+    photo_public_id = models.CharField(null=True, blank=True, max_length=255)
     room_owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    percent_of_floors = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
+    percent_of_floors = models.IntegerField(null=True, validators=[MinValueValidator(0), MaxValueValidator(100)])
+
+
+class Reward(models.Model):
+
+    month = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(12)])
+    amount_of_money = models.IntegerField(default=0)
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE)
