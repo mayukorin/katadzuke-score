@@ -1,6 +1,7 @@
 import ssl
 import dj_database_url
 import django_heroku, cloudinary, environ
+from .base import *
 
 DATABASES = {
     'default': {
@@ -18,7 +19,6 @@ DATABASES['default'].update(db_from_env)
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 ALLOWED_HOSTS = ["*"]
-django_heroku.settings(locals())
 
 
 env = environ.Env()
@@ -27,3 +27,5 @@ cloudinary.config(
     api_key=env('CLOUDINARY_API_KEY'),
     api_secret=env('CLOUDINARY_API_SECRET')
 )
+
+django_heroku.settings(locals())
