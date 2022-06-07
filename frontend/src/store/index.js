@@ -67,7 +67,7 @@ const authModule = {
     },
     signout(context) {
       localStorage.removeItem("access");
-      context.commit("reset");
+      context.commit("clear");
     },
     getRewardThisMonth(context) {
       return api.get("/reward-this-month/").then((response) => {

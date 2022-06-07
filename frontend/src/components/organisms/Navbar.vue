@@ -6,15 +6,11 @@
       </div>
     </v-snackbar>
     <v-app-bar app color="primary">
-      <v-app-bar-nav-icon
-        class="white--text"
-        @click.stop="drawer = !drawer"
-      ></v-app-bar-nav-icon>
       <v-toolbar-title class="text-uppercase white--text">
         <span class="font-weight-light">KDS</span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <span v-if="rewardThisMonth >= 0" class="white--text">
+      <span v-if="rewardThisMonth >= 0 && isSignIn" class="white--text">
         今月のご褒美：
         <br />
         <span class="accent--text">
@@ -22,7 +18,7 @@
         </span>
         円
       </span>
-      <span v-else class="white--text">
+      <span v-else-if="rewardThisMonth < 0 && isSignIn" class="white--text">
         今月の罰金：
         <br />
         <span class="accent--text">
@@ -39,11 +35,6 @@
         <v-icon right>mdi-exit-to-app</v-icon>
       </v-btn>
     </v-app-bar>
-
-    <v-navigation-drawer app v-model="drawer">
-      <v-list v-if="isSignIn"> </v-list>
-      <v-list v-else> </v-list>
-    </v-navigation-drawer>
   </nav>
 </template>
 <script>
