@@ -15,6 +15,11 @@ test@example.com, abc (パスワード)でログインできます．
 
 # デモ
 
+https://drive.google.com/file/d/1jl1n2MEl9k-Q2OIEAx0tjhd5V-TqtrGo/view?usp=sharing
+
+片付け後
+
+https://drive.google.com/file/d/1sZEDDjkt6WS3arVr4vlVrIu113hDnMcQ/view?usp=sharing
 
 
 # ターゲット
@@ -44,6 +49,5 @@ Python/OpenCV/Numba/Django/Vue/Vuetify/SQLite/Docker/Heroku
 
 
 # 技術的に工夫した点
-
 
 - Numba という JIT コンパイラを用いて，片付け具合を採点する部分の処理を高速化した点(処理時間が 60 秒 → 1 秒ほどになりました)．
