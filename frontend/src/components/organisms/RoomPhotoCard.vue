@@ -107,7 +107,8 @@ export default {
     },
     getPhotoURL(photo_url) {
       if (photo_url == null) {
-        return "/img/no_image.png";
+        // ToDo: 変数で表示
+        return "https://res.cloudinary.com/dqyodswnq/image/upload/v1654651923/no_image_htu0nq.png";
       } else {
         return photo_url;
       }
