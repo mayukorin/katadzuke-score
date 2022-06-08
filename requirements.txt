@@ -1,5 +1,6 @@
 Django==2.2.*
 psycopg2-binary==2.8.6
+psycopg2==2.8.6
 djangorestframework==3.12.*
 djangorestframework-simplejwt==4.6.*
 djoser==2.1.*
