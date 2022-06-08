@@ -8,6 +8,7 @@
     />
     <v-spacer></v-spacer>
     <v-text-field
+      type="password"
       v-model="form.password"
       label="パスワード"
       :rules="rules.password"

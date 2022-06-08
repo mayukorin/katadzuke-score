@@ -148,14 +148,14 @@ export default {
                 let signInSuccessMessage = "片付け具合は" + score + "点です\n";
                 if (response.amount_of_money < 0) {
                   signInSuccessMessage +=
-                    "今月の罰金は" +
+                    "現時点で今月の罰金は" +
                     -1 * response.amount_of_money +
-                    "円になりました";
+                    "円です";
                 } else {
                   signInSuccessMessage +=
-                    "今月のご褒美は" +
+                    "現時点で今月のご褒美は" +
                     response.amount_of_money +
-                    "円になりました";
+                    "円です";
                 }
                 this.$store.dispatch("flashMessage/setSuccessMessage", {
                   messages: [signInSuccessMessage],
