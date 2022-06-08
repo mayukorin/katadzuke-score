@@ -9,7 +9,7 @@ def cnt_floor_cnt_of_pixels(hsv):
     for h in range(hsv.shape[0]):
         for w in range(hsv.shape[1]):
             # print(hsv[h, w, 0])
-            if 17 >= hsv[h, w, 0] and hsv[h, w, 0] >= 15:
+            if 17 >= hsv[h, w, 0] and hsv[h, w, 0] >= 14:
                 cnt += 1
     return cnt
 
