@@ -1,0 +1,133 @@
+<template>
+  <div>
+    <v-carousel-item>
+      <div>
+        <v-card height="100%" flat>
+          <div>
+            <v-card-title class="text-h6 mt-2 mx-2">
+              {{ roomPhoto.filming_date }}({{ dayOfWeek }})
+            </v-card-title>
+            <v-card-text>
+              <div v-if="roomPhoto.photo_url == null">
+                片付け具合を採点するには部屋の写真を投稿してください
+              </div>
+              <div v-else class="text-h5">
+                <div v-show="!isUploading">
+                  {{ roomPhoto.percent_of_floors }}点
+                </div>
+                <v-progress-circular
+                  indeterminate
+                  color="primary"
+                  v-show="isUploading"
+                ></v-progress-circular>
+              </div>
+            </v-card-text>
+            <input
+              style="display: none"
+              ref="input"
+              type="file"
+              @change="selectedFile()"
+            />
+            <FloatingActionButton @click="handleClick()" :smallFlag="true">
+              <v-icon dark> mdi-camera </v-icon>
+              <span class="ml-1" v-if="roomPhoto.photo_url == null">
+                部屋の写真投稿
+              </span>
+              <span class="ml-1" v-else> 部屋の写真変更 </span>
+            </FloatingActionButton>
+          </div>
+          <div class="text-center aspect d-flex align-center justify-center">
+            <v-img
+              :src="getPhotoURL(roomPhoto.photo_url)"
+              aspect-ratio="0.7"
+              contain
+              class="top-0 mb-1"
+              v-show="!isUploading"
+            />
+            <v-progress-circular
+              indeterminate
+              color="primary"
+              size="70"
+              v-show="isUploading"
+            ></v-progress-circular>
+          </div>
+        </v-card>
+      </div>
+    </v-carousel-item>
+  </div>
+</template>
+<script>
+import FloatingActionButton from "@/components/atoms/FloatingActionButton.vue";
+
+export default {
+  name: "RoomPhotoCard2",
+  components: {
+    FloatingActionButton,
+  },
+  props: {
+    roomPhoto: {
+      type: Object,
+      defualt: null,
+    },
+    dayOfWeek: {
+      type: String,
+      defualt: "",
+    },
+    index: {
+      type: Number,
+      default: 0,
+    },
+  },
+  data() {
+    return {
+      isUploading: false,
+    };
+  },
+  methods: {
+    getPhotoURL(photo_url) {
+      if (photo_url == null) {
+        // ToDo: 変数で表示
+        return "https://res.cloudinary.com/dqyodswnq/image/upload/v1654651923/no_image_htu0nq.png";
+      } else {
+        return photo_url;
+      }
+    },
+    handleClick() {
+      this.$refs.input[0].click();
+    },
+    async selectedFile() {
+      if (!this.isUploading) {
+        this.isUploading = true;
+        let file = this.$refs.input[0].files[0];
+        if (file != null) {
+          console.log(file);
+          let reader = new FileReader();
+          reader.onload = (event) => {
+            let base64Text = event.currentTarget.result;
+            return this.$store
+              .dispatch("roomPhotos/upload", {
+                roomPhotoBase64Content: base64Text,
+                roomPhotoPk: this.roomPhotos[this.photoIndex].pk,
+              })
+              .finally(() => {
+                console.log("final");
+                this.isUploading = false;
+              });
+          };
+          reader.readAsDataURL(file);
+        }
+        this.isUploading = false;
+      }
+    },
+  },
+};
+</script>
+<style scoped>
+.top-0 {
+  margin-top: 0px !important;
+}
+
+.aspect {
+  aspect-ratio: 7 / 10;
+}
+</style>

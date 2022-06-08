@@ -1,0 +1,10 @@
+{
+    "name": "frontend",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "postinstall": "cd frontend; rm -rf package-lock.json; npm install",
+        "build": "cd frontend; cd node_modules; ls; cd ../;npm run build",
+        "start": "cd frontend; npm run serve"
+    }
+}
