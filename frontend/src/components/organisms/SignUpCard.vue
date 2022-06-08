@@ -1,7 +1,7 @@
 <template>
   <v-card class="login-card px-3">
     <v-card-title>
-      <span class="headline">e-resolve</span>
+      <span class="headline">KDS</span>
     </v-card-title>
     <v-card-text>
       <SignUpForm @signup-button-click="handleSignUp" :is-loading="isLoading" />
