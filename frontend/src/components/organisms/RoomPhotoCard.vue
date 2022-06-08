@@ -119,6 +119,12 @@ export default {
     async selectedFile() {
       if (!this.isUploading) {
         this.isUploading = true;
+        (async () => {
+          const sleep = (second) =>
+            new Promise((resolve) => setTimeout(resolve, second * 1000));
+          await sleep(3);
+        })();
+        console.log("3s完了");
         let file = this.$refs.input[0].files[0];
         if (file != null) {
           console.log(file);
@@ -161,8 +167,9 @@ export default {
               });
           };
           reader.readAsDataURL(file);
+        } else {
+          this.isUploading = false;
         }
-        this.isUploading = false;
       }
     },
   },
