@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-carousel-item>
-      <div>
+      <div :ref="'roomPhotoCard' + index">
         <v-card height="100%" flat>
           <div>
             <v-card-title class="text-h6 mt-2 mx-2">
@@ -83,7 +83,25 @@ export default {
       isUploading: false,
     };
   },
+  created() {
+    this.observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        let height = entry.contentRect.height;
+        if (height != 0) {
+          this.$emit("change-card-height", height);
+        }
+      }
+    });
+  },
   methods: {
+    observeCard() {
+      let ref = "roomPhotoCard" + this.index;
+      this.observer.observe(this.$refs[ref]);
+    },
+    unObserveCard() {
+      let ref = "roomPhotoCard" + this.index;
+      this.observer.unobserve(this.$refs[ref]);
+    },
     getPhotoURL(photo_url) {
       if (photo_url == null) {
         // ToDo: 変数で表示
