@@ -3,6 +3,7 @@ from .models import RoomPhoto, Reward
 from rest_framework import views, status
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, JSONParser
+from rest_framework.permissions import IsAuthenticated
 import numpy as np
 from .room_vision import calc_percent_of_floors
 import base64, datetime, cloudinary
@@ -64,6 +65,8 @@ class RoomPhotoCreateAPIView(views.APIView):
 
 class RoomPhotoListAPIView(views.APIView):
 
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, *arga, **kwargs):
 
         user_room_photos = RoomPhoto.objects.filter(room_owner=request.user)
@@ -74,6 +77,7 @@ class RoomPhotoListAPIView(views.APIView):
 
 class UserCreateAPIView(views.APIView):
 
+
     def post(self, request, *args, **kwargs):
 
         serializer = UserSerializer(data=request.data)
@@ -83,6 +87,8 @@ class UserCreateAPIView(views.APIView):
 
 
 class RewardThisMonthGetAPIView(views.APIView):
+
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
 
