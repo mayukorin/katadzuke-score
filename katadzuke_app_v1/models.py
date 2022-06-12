@@ -63,6 +63,13 @@ class User(AbstractUser):
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     username = models.CharField(verbose_name="ユーザ名", max_length=150)
+    full_score_photo_public_id = models.CharField(null=True, blank=True, max_length=255)
+    full_score_photo_url = models.CharField(null=True, blank=True, max_length=255)
+    full_score_room_percent_of_floors = models.IntegerField(null=True, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    threshould_reward_score = models.IntegerField(default=70, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    threshould_fine_score = models.IntegerField(default=30, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    amount_of_reward = models.IntegerField(default=500)
+    amount_of_fine = models.IntegerField(default=500)
 
     objects = UserManager()
 
@@ -78,6 +85,18 @@ class RoomPhoto(models.Model):
     photo_public_id = models.CharField(null=True, blank=True, max_length=255)
     room_owner = models.ForeignKey(User, on_delete=models.CASCADE)
     percent_of_floors = models.IntegerField(null=True, validators=[MinValueValidator(0), MaxValueValidator(100)])
+
+    def get_katadzuke_score(self):
+        print(self.room_owner.full_score_room_percent_of_floors)
+        if self.percent_of_floors is not None:
+            if self.room_owner.full_score_room_percent_of_floors is None:
+                return self.percent_of_floors
+            elif self.room_owner.full_score_room_percent_of_floors == 0:
+                return 100
+            else:
+                return int(100*(min(self.percent_of_floors/self.room_owner.full_score_room_percent_of_floors, 1)))
+        else:
+            return None
 
 
 class Reward(models.Model):

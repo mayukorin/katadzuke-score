@@ -12,7 +12,6 @@
       <v-spacer></v-spacer>
       <span v-if="rewardThisMonth >= 0 && isSignIn" class="white--text">
         今月のご褒美：
-        <br />
         <span class="accent--text">
           {{ rewardThisMonth }}
         </span>
@@ -26,16 +25,41 @@
         </span>
         円
       </span>
-      <v-btn v-if="isSignIn" text color="white" @click="signout">
-        <span>ログアウト</span>
-        <v-icon right>mdi-exit-to-app</v-icon>
-      </v-btn>
-      <v-btn v-else text color="white" @click="signup">
-        <span>新規登録</span>
-      </v-btn>
+      <v-menu offset-y v-if="isSignIn">
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn text v-bind="attrs" v-on="on" color="white">
+            <v-icon left>mdi-chevron-down</v-icon>
+            <span class="white--text">Menu</span>
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item
+            v-if="isSignIn"
+            router
+            to="/full-score-room-photo-upload"
+          >
+            <v-list-item-content>
+              <v-list-item-title>100点満点の部屋登録</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item v-if="isSignIn" router to="/fine-and-reward-update">
+            <v-list-item-content>
+              <v-list-item-title>ご褒美と罰金の設定</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item @click="signout">
+            <v-list-item-content>
+              <v-list-item-title>ログアウト</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-menu>
       <v-btn v-if="!isSignIn" text color="white" @click="signin">
         <span>ログイン</span>
         <v-icon right>mdi-exit-to-app</v-icon>
+      </v-btn>
+      <v-btn v-if="!isSignIn" text color="white" @click="signup">
+        <span>新規登録</span>
       </v-btn>
     </v-app-bar>
   </nav>

@@ -33,6 +33,7 @@ export default {
       return false;
     },
     roomPhotos() {
+      console.log(this.$store.state.roomPhotos.fullScoreRoomPhotoURL);
       return this.$store.state.roomPhotos.roomPhotos;
     },
   },

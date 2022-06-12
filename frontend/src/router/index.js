@@ -3,6 +3,8 @@ import VueRouter from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import SignUp from "@/components/templates/SignUpView";
 import SignIn from "@/components/templates/SignInView";
+import FullScoreRoomPhotoUpload from "@/components/templates/FullScoreRoomPhotoUploadView";
+import RewardAndFineUpdate from "@/components/templates/RewardAndFineUpdateView";
 import store from "@/store";
 Vue.use(VueRouter);
 
@@ -22,6 +24,18 @@ const routes = [
     path: "/sign-in",
     name: "signIn",
     component: SignIn,
+  },
+  {
+    path: "/full-score-room-photo-upload",
+    name: "fullScoreRoomPhotoUpload",
+    component: FullScoreRoomPhotoUpload,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/fine-and-reward-update",
+    name: "RewardAndFineUpdate",
+    component: RewardAndFineUpdate,
+    meta: { requiresAuth: true },
   },
 ];
 

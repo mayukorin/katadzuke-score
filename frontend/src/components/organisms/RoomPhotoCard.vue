@@ -98,6 +98,7 @@ export default {
     },
     roomPhotos() {
       console.log("change");
+      console.log(this.$store.state.roomPhotos.fullScoreRoomPhotoURL);
       return this.$store.state.roomPhotos.roomPhotos;
     },
   },

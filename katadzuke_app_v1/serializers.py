@@ -1,3 +1,4 @@
+import katadzuke_app_v1
 from rest_framework import serializers
 from .models import RoomPhoto, User, Reward
 import re
@@ -7,7 +8,22 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'username', 'password']
+        fields = ['email', 'username', 'password', 'full_score_photo_url', 'threshould_reward_score', 'threshould_fine_score', 'amount_of_reward', 'amount_of_fine']
+
+        extra_kwargs = {
+            'full_score_photo_url': {
+                'read_only': True
+            },
+            'email': {
+                'write_only': True
+            },
+            'username': {
+                'write_only': True
+            },
+            'password': {
+                'write_only': True
+            }
+        }
 
     def validate_email(self, value):
         pattern = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
@@ -39,9 +55,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RoomPhotoSerializer(serializers.ModelSerializer):
 
+    katadzuke_score = serializers.SerializerMethodField()
+
     class Meta:
         model = RoomPhoto
-        fields = ['filming_date', 'photo_url', 'percent_of_floors', 'pk']
+        fields = ['filming_date', 'photo_url', 'percent_of_floors', 'pk', 'katadzuke_score']
 
         extra_kwargs = {
             'filming_date': {
@@ -55,8 +73,14 @@ class RoomPhotoSerializer(serializers.ModelSerializer):
             },
             'pk': {
                 'read_only': True
-            }
+            },
+            'katadzuke_score': {
+                'read_only': True
+            },
         }
+
+    def get_katadzuke_score(self, instance):
+        return instance.get_katadzuke_score()
 
 
 class RewardSerializer(serializers.ModelSerializer):

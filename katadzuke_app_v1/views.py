@@ -1,3 +1,5 @@
+from importlib.util import spec_from_file_location
+from logging import raiseExceptions
 from .serializers import UserSerializer, RoomPhotoSerializer, RewardSerializer
 from .models import RoomPhoto, Reward
 from rest_framework import views, status
@@ -28,7 +30,7 @@ class RoomPhotoCreateAPIView(views.APIView):
         reward_this_month = Reward.objects.get(recipient=request.user, month=room_photo.filming_date.month)
 
         if room_photo.photo_public_id is not None:
-            cloudinary.uploader.destroy(room_photo.photo_public_id)
+            cloudinary.uploader.destroy(room_photo.photo_public_id) # cloudinary に id 固定で更新とかない？
             if room_photo.percent_of_floors <= THRESHOULD_FINE_SCORE:
                 reward_this_month.amount_of_money += AMOUNT_OF_REWARD
             elif room_photo.percent_of_floors >= THRESHOULD_REWARD_SCORE:
@@ -62,6 +64,25 @@ class RoomPhotoCreateAPIView(views.APIView):
         return Response(serializer.data, status.HTTP_201_CREATED)
 
 
+class FullScoreRoomPhotoUploadAPIView(views.APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+
+        signin_user = request.user
+        if signin_user.full_score_photo_public_id is not None:
+            cloudinary.uploader.destroy(signin_user.full_score_photo_public_id) # cloudinary に id 固定で更新とかない？
+
+        response = cloudinary.uploader.upload(file=request.data["roomPhotoBase64Content"])
+        signin_user.full_score_photo_public_id = response["public_id"]
+        signin_user.full_score_photo_url = response["url"]
+        signin_user.full_score_room_percent_of_floors = calc_percent_of_floors(request.data["roomPhotoBase64Content"])
+
+        signin_user.save()
+
+        return Response({"full_score_photo_url": signin_user.full_score_photo_url}, status.HTTP_201_CREATED)
+
 
 class RoomPhotoListAPIView(views.APIView):
 
@@ -84,6 +105,31 @@ class UserCreateAPIView(views.APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status.HTTP_201_CREATED)
+
+class UserInfoGetAPIView(views.APIView):
+
+    # TODO: jwt のやつに組み込めないのか
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+
+        serializer = UserSerializer(instance=request.user)
+
+        return Response(serializer.data, status.HTTP_200_OK)
+
+class UserInfoUpdateAPIView(views.APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+
+        print(request.data)
+        serializer = UserSerializer(instance=request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status.HTTP_200_OK)
 
 
 class RewardThisMonthGetAPIView(views.APIView):
