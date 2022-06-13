@@ -7,6 +7,7 @@
     depressed
     :loading="isLoading"
     :small="smallFlag"
+    :disabled="disableFlag"
   >
     <slot />
   </v-btn>
@@ -21,17 +22,21 @@ export default {
     },
     textFlag: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     classString: {
       type: String,
-      default: "primary mt-3 mx-auto mb-3",
+      default: "mt-3 mx-auto mb-3",
     },
     colorString: {
       type: String,
-      default: "",
+      default: "primary",
     },
     smallFlag: {
+      type: Boolean,
+      default: false,
+    },
+    disableFlag: {
       type: Boolean,
       default: false,
     },

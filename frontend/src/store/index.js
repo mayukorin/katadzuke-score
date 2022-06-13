@@ -11,10 +11,10 @@ const authModule = {
     username: "",
     isSignIn: false,
     // TODO: 動的に変化
-    threshouldRewardScore: 60,
-    threshouldFineScore: 20,
-    AmountOfReward: 100,
-    AmountOfFine: 200,
+    threshouldRewardScore: 0,
+    threshouldFineScore: 0,
+    amountOfReward: 0,
+    amountOfFine: 0,
     rewardThisMonth: 0,
   },
   mutations: {
@@ -30,6 +30,12 @@ const authModule = {
       (state.email = ""), (state.username = "");
       state.isSignIn = false;
     },
+    setUserInfo(state, payload) {
+      state.threshouldRewardScore = payload.threshould_reward_score;
+      state.threshouldFineScore = payload.threshould_fine_score;
+      state.amountOfReward = payload.amount_of_reward;
+      state.amountOfFine = payload.amount_of_fine;
+    },
   },
   actions: {
     signin(context, payload) {
@@ -41,12 +47,12 @@ const authModule = {
         .then((response) => {
           localStorage.setItem("access", response.data.access);
           context.dispatch("renew");
-          return context.dispatch("getRewardThisMonth");
+          context.dispatch("getRewardThisMonth");
+          return context.dispatch("getUserInfo");
         });
     },
     signup(context, payload) {
       console.log(payload);
-      // ここでapiでDjangoと接続
       return api({
         method: "post",
         url: "/signup/",
@@ -76,6 +82,27 @@ const authModule = {
         return response.data;
       });
     },
+    updateUserInfo(context, payload) {
+      console.log(payload);
+      return api({
+        method: "patch",
+        url: "/user-info-update/",
+        data: payload,
+      }).then((response) => {
+        return context.commit("setUserInfo", response.data);
+      });
+    },
+    getUserInfo(context) {
+      return api("/user-info/").then((response) => {
+        console.log(response.data);
+        context.commit("setUserInfo", response.data);
+        return context.dispatch(
+          "roomPhotos/setFullScoreRoomPhotoURL",
+          response.data,
+          { root: true }
+        );
+      });
+    },
   },
 };
 
@@ -83,6 +110,7 @@ const roomPhotoModule = {
   namespaced: true,
   state: {
     roomPhotos: [],
+    fullScoreRoomPhotoURL: "",
   },
   mutations: {
     set(state, payload) {
@@ -95,7 +123,11 @@ const roomPhotoModule = {
         (roomPhoto) => roomPhoto.pk == payload.pk
       );
       roomPhoto.photo_url = payload.photo_url;
-      roomPhoto.percent_of_floors = payload.percent_of_floors;
+      roomPhoto.katadzuke_score = payload.katadzuke_score;
+    },
+    setFullScoreRoomPhotoURL(state, payload) {
+      state.fullScoreRoomPhotoURL = payload.full_score_photo_url;
+      console.log(state.fullScoreRoomPhotoURL);
     },
     clear(state) {
       state.roomPhotos = [];
@@ -124,6 +156,21 @@ const roomPhotoModule = {
         console.log(response);
         context.commit("set", { roomPhotos: response.data });
       });
+    },
+    uploadFullScoreRoomPhoto(context, payload) {
+      return api({
+        method: "post",
+        url: "/room-photos/full-score/",
+        data: {
+          roomPhotoBase64Content: payload.roomPhotoBase64Content,
+        },
+      }).then((response) => {
+        console.log(response);
+        context.commit("setFullScoreRoomPhotoURL", response.data);
+      });
+    },
+    setFullScoreRoomPhotoURL(context, payload) {
+      return context.commit("setFullScoreRoomPhotoURL", payload);
     },
   },
 };

@@ -6,6 +6,7 @@
         :key="roomPhoto.pk"
         :room-photo="roomPhoto"
         :day-of-week="dayOfWeeks[index]"
+        @change-card-height="setCardHeight"
         ref="roomPhotoCard"
       />
     </v-carousel>
@@ -32,6 +33,7 @@ export default {
       return false;
     },
     roomPhotos() {
+      console.log(this.$store.state.roomPhotos.fullScoreRoomPhotoURL);
       return this.$store.state.roomPhotos.roomPhotos;
     },
   },
@@ -45,10 +47,7 @@ export default {
           }
         }
       });
-      console.log(this.$refs);
-      console.log(this.$refs.roomPhotoCard[this.photoIndex]);
-      // VueComponent だと OUT
-      this.observer.observe(this.$refs.roomPhotoCard[this.photoIndex]);
+      this.$refs.roomPhotoCard[0].observeCard();
     });
   },
   watch: {
@@ -56,10 +55,15 @@ export default {
       (async () => {
         const sleep = (second) =>
           new Promise((resolve) => setTimeout(resolve, second * 1000));
-        this.observer.unobserve(this.$refs.roomPhotoCard[preIndex]);
+        this.$refs.roomPhotoCard[preIndex].unObserveCard();
         await sleep(1);
-        this.observer.observe(this.$refs.roomPhotoCard[newIndex]);
+        this.$refs.roomPhotoCard[newIndex].observeCard();
       })();
+    },
+  },
+  methods: {
+    setCardHeight(height) {
+      this.cardHeight = height;
     },
   },
 };

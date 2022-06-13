@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-carousel-item>
-      <div>
+      <div :ref="'roomPhotoCard' + index">
         <v-card height="100%" flat>
           <div>
             <v-card-title class="text-h6 mt-2 mx-2">
@@ -13,7 +13,7 @@
               </div>
               <div v-else class="text-h5">
                 <div v-show="!isUploading">
-                  {{ roomPhoto.percent_of_floors }}点
+                  {{ roomPhoto.katadzuke_score }}点
                 </div>
                 <v-progress-circular
                   indeterminate
@@ -22,19 +22,9 @@
                 ></v-progress-circular>
               </div>
             </v-card-text>
-            <input
-              style="display: none"
-              ref="input"
-              type="file"
-              @change="selectedFile()"
-            />
-            <FloatingActionButton @click="handleClick()" :smallFlag="true">
-              <v-icon dark> mdi-camera </v-icon>
-              <span class="ml-1" v-if="roomPhoto.photo_url == null">
-                部屋の写真投稿
-              </span>
-              <span class="ml-1" v-else> 部屋の写真変更 </span>
-            </FloatingActionButton>
+            <RoomPhotoUploadButton @select-file="selectedFile">
+              部屋の写真変更
+            </RoomPhotoUploadButton>
           </div>
           <div class="text-center aspect d-flex align-center justify-center">
             <v-img
@@ -57,12 +47,12 @@
   </div>
 </template>
 <script>
-import FloatingActionButton from "@/components/atoms/FloatingActionButton.vue";
+import RoomPhotoUploadButton from "@/components/molecules/RoomPhotoUploadButton.vue";
 
 export default {
   name: "RoomPhotoCard2",
   components: {
-    FloatingActionButton,
+    RoomPhotoUploadButton,
   },
   props: {
     roomPhoto: {
@@ -83,7 +73,25 @@ export default {
       isUploading: false,
     };
   },
+  created() {
+    this.observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        let height = entry.contentRect.height;
+        if (height != 0) {
+          this.$emit("change-card-height", height);
+        }
+      }
+    });
+  },
   methods: {
+    observeCard() {
+      let ref = "roomPhotoCard" + this.index;
+      this.observer.observe(this.$refs[ref]);
+    },
+    unObserveCard() {
+      let ref = "roomPhotoCard" + this.index;
+      this.observer.unobserve(this.$refs[ref]);
+    },
     getPhotoURL(photo_url) {
       if (photo_url == null) {
         // ToDo: 変数で表示
@@ -95,10 +103,9 @@ export default {
     handleClick() {
       this.$refs.input[0].click();
     },
-    async selectedFile() {
+    selectedFile(file) {
       if (!this.isUploading) {
         this.isUploading = true;
-        let file = this.$refs.input[0].files[0];
         if (file != null) {
           console.log(file);
           let reader = new FileReader();
@@ -107,7 +114,7 @@ export default {
             return this.$store
               .dispatch("roomPhotos/upload", {
                 roomPhotoBase64Content: base64Text,
-                roomPhotoPk: this.roomPhotos[this.photoIndex].pk,
+                roomPhotoPk: this.roomPhoto.pk,
               })
               .finally(() => {
                 console.log("final");
@@ -116,7 +123,6 @@ export default {
           };
           reader.readAsDataURL(file);
         }
-        this.isUploading = false;
       }
     },
   },

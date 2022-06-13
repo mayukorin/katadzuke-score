@@ -31,7 +31,7 @@ class Command(BaseCommand):
                 room_photos = RoomPhoto.objects.filter(room_owner=user, filming_date__lt=today)
                 for room_photo in room_photos:
                     print(room_photo.filming_date)
-                    # cloudinary.uploader.destroy(room_photo.photo_public_id)
+                    cloudinary.uploader.destroy(room_photo.photo_public_id)
                     room_photo.delete()
 
 

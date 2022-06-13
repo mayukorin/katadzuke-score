@@ -2,19 +2,19 @@
   <v-container class="mx-4">
     <v-row justify="center">
       <v-col cols="9" md="4">
-        <RoomPhotoCard />
+        <RoomPhotoCardCarousel />
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script>
-import RoomPhotoCard from "@/components/organisms/RoomPhotoCard";
+import RoomPhotoCardCarousel from "@/components/organisms/RoomPhotoCardCarousel";
 
 export default {
   name: "HelloWorld",
   components: {
-    RoomPhotoCard,
+    RoomPhotoCardCarousel,
   },
   data: () => ({
     drawer: false,
