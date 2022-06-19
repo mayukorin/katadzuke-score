@@ -7,8 +7,9 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 import numpy as np
-from .room_vision import calc_percent_of_floors
+from .room_vision import calc_percent_of_floors, upload_room_photo_to_cloudinary
 import base64, datetime, cloudinary
+from django.db.models import Q
 # Create your views here.
 
 THRESHOULD_REWARD_SCORE = 60
@@ -27,41 +28,43 @@ class RoomPhotoCreateAPIView(views.APIView):
         # 認可を後で追加
         # room_photo の update と，reward の update は別にした方が良い？
         room_photo = RoomPhoto.objects.get(pk=pk) 
-        reward_this_month = Reward.objects.get(recipient=request.user, month=room_photo.filming_date.month)
+        # reward_this_month = Reward.objects.get(recipient=request.user, month=room_photo.filming_date.month)
 
         if room_photo.photo_public_id is not None:
-            cloudinary.uploader.destroy(room_photo.photo_public_id) # cloudinary に id 固定で更新とかない？
-            if room_photo.percent_of_floors <= THRESHOULD_FINE_SCORE:
-                reward_this_month.amount_of_money += AMOUNT_OF_REWARD
-            elif room_photo.percent_of_floors >= THRESHOULD_REWARD_SCORE:
-                reward_this_month.amount_of_money -= AMOUNT_OF_FINE
 
-        response = cloudinary.uploader.upload(file=request.data["roomPhotoBase64Content"])
-        room_photo.photo_public_id = response["public_id"]
-        room_photo.photo_url = response["url"]
+            room_photo.destroy_room_photo_from_cloudinary()
+            room_photo.reset_percent_of_floors_and_photo_public_id_and_photo_url()
+            # reward_this_month.remove_reflection_of_room_photo_score_from_amount_of_money(room_photo)
 
-        room_photo.percent_of_floors = calc_percent_of_floors(request.data["roomPhotoBase64Content"])
-
-        room_photo.save()
-
-        if room_photo.percent_of_floors <= THRESHOULD_FINE_SCORE:
-                reward_this_month.amount_of_money -= AMOUNT_OF_FINE
-        elif room_photo.percent_of_floors >= THRESHOULD_REWARD_SCORE:
-            reward_this_month.amount_of_money += AMOUNT_OF_REWARD
-
-        reward_this_month.save()
+        public_id, url = upload_room_photo_to_cloudinary(request.data["roomPhotoBase64Content"])
+        percent_of_floors = calc_percent_of_floors(request.data["roomPhotoBase64Content"])
+        room_photo = room_photo.set_percent_of_floors_and_photo_public_id_and_photo_url(percent_of_floors, public_id, url)
+        
+        # reward_this_month.reflect_room_photo_score_to_amount_of_money(room_photo)
 
         serializer = RoomPhotoSerializer(instance=room_photo)
        
-        '''
-        print(type(request.data["roomPhoto"])) # str
-        np_upload_room_photo = np.asarray(bytearray(base64.b64decode( request.data["roomPhoto"].split(',')[1] )), dtype="uint8")
-        print(type(np_upload_room_photo))
-        print(np_upload_room_photo.shape) # (4274694,)
-        print(tranlate_rgb_to_csv2(np_upload_room_photo))
-        '''
 
         return Response(serializer.data, status.HTTP_201_CREATED)
+
+class RewardThisMonthUpdateAPIView(views.APIView):
+
+    parser_class = [JSONParser, MultiPartParser]
+
+    #TODO: pk で更新できるように変更
+    def post(self, request, *args, **kwargs):
+
+        today = datetime.date.today()
+        reward_this_month = Reward.objects.get(recipient=request.user, month=today.month)
+        print(request.data["prev_room_photo_score"])
+        print(request.data["new_room_photo_score"])
+        reward_this_month = reward_this_month.remove_reflection_of_room_photo_score_from_amount_of_money(request.data["prev_room_photo_score"])
+        reward_this_month.reflect_room_photo_score_to_amount_of_money(request.data["new_room_photo_score"])
+
+        serializer = RewardSerializer(instance=reward_this_month)
+        return Response(serializer.data, status.HTTP_201_CREATED)
+
+
 
 
 class FullScoreRoomPhotoUploadAPIView(views.APIView):
@@ -71,17 +74,17 @@ class FullScoreRoomPhotoUploadAPIView(views.APIView):
     def post(self, request, *args, **kwargs):
 
         signin_user = request.user
-        if signin_user.full_score_photo_public_id is not None:
-            cloudinary.uploader.destroy(signin_user.full_score_photo_public_id) # cloudinary に id 固定で更新とかない？
+        if signin_user.full_score_photo.photo_public_id is not None:
+            signin_user.full_score_photo.destroy_room_photo_from_cloudinary()
 
-        response = cloudinary.uploader.upload(file=request.data["roomPhotoBase64Content"])
-        signin_user.full_score_photo_public_id = response["public_id"]
-        signin_user.full_score_photo_url = response["url"]
-        signin_user.full_score_room_percent_of_floors = calc_percent_of_floors(request.data["roomPhotoBase64Content"])
 
-        signin_user.save()
+        public_id, url = upload_room_photo_to_cloudinary(request.data["roomPhotoBase64Content"])
+        percent_of_floors = calc_percent_of_floors(request.data["roomPhotoBase64Content"])
+        signin_user.full_score_photo.set_percent_of_floors_and_photo_public_id_and_photo_url(percent_of_floors, public_id, url)
 
-        return Response({"full_score_photo_url": signin_user.full_score_photo_url}, status.HTTP_201_CREATED)
+        serializer = RoomPhotoSerializer(instance=signin_user.full_score_photo)
+
+        return Response(serializer.data, status.HTTP_201_CREATED) # TODO: CREATED?
 
 
 class RoomPhotoListAPIView(views.APIView):
@@ -90,7 +93,7 @@ class RoomPhotoListAPIView(views.APIView):
 
     def get(self, request, *arga, **kwargs):
 
-        user_room_photos = RoomPhoto.objects.filter(room_owner=request.user)
+        user_room_photos = RoomPhoto.objects.filter(room_owner=request.user).filter(~Q(pk=request.user.full_score_photo.pk))
         serializer = RoomPhotoSerializer(instance=user_room_photos, many=True)
 
         return Response(serializer.data, status.HTTP_200_OK)

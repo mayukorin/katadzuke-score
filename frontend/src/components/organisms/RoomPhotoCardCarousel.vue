@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-carousel v-model="photoIndex" class="my-4" :height="cardHeight + 60">
-      <RoomPhotoCard2
+      <RoomPhotoCard
         v-for="(roomPhoto, index) in roomPhotos"
         :key="roomPhoto.pk"
         :room-photo="roomPhoto"
@@ -14,12 +14,12 @@
 </template>
 <script>
 import ResizeObserver from "resize-observer-polyfill";
-import RoomPhotoCard2 from "@/components/organisms/RoomPhotoCard2";
+import RoomPhotoCard from "@/components/organisms/RoomPhotoCard";
 
 export default {
   name: "RoomPhotoCardCarousel",
   components: {
-    RoomPhotoCard2,
+    RoomPhotoCard,
   },
   data() {
     return {

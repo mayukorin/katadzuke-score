@@ -10,18 +10,21 @@
         <span class="font-weight-light">KDS</span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <span v-if="rewardThisMonth >= 0 && isSignIn" class="white--text">
+      <span v-if="amountOfRewardThisMonth >= 0 && isSignIn" class="white--text">
         今月のご褒美：
         <span class="accent--text">
-          {{ rewardThisMonth }}
+          {{ amountOfRewardThisMonth }}
         </span>
         円
       </span>
-      <span v-else-if="rewardThisMonth < 0 && isSignIn" class="white--text">
+      <span
+        v-else-if="amountOfRewardThisMonth < 0 && isSignIn"
+        class="white--text"
+      >
         今月の罰金：
         <br />
         <span class="accent--text">
-          {{ -1 * rewardThisMonth }}
+          {{ -1 * amountOfRewardThisMonth }}
         </span>
         円
       </span>
@@ -98,8 +101,8 @@ export default {
       } else this.setSnacFalse();
       return this.$store.state.flashMessage;
     },
-    rewardThisMonth() {
-      return this.$store.state.auth.rewardThisMonth;
+    amountOfRewardThisMonth() {
+      return this.$store.state.reward.amountOfRewardThisMonth;
     },
   },
   methods: {

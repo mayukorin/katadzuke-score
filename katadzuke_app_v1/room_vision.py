@@ -1,5 +1,5 @@
 from statistics import  median
-import numba, base64, cv2, math
+import numba, base64, cv2, math, cloudinary
 import numpy as np
 
 
@@ -25,3 +25,10 @@ def calc_percent_of_floors(base64_img):
     floor_cnt_of_pixels = cnt_floor_cnt_of_pixels(hsv)
 
     return math.floor(floor_cnt_of_pixels/total_cnt_of_pixels*100)
+
+def upload_room_photo_to_cloudinary(base64Content):
+
+    response = cloudinary.uploader.upload(file=base64Content)
+
+    return response["public_id"], response["url"]
+

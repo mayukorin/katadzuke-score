@@ -4,55 +4,6 @@ from .models import RoomPhoto, User, Reward
 import re
 from django.core.exceptions import ObjectDoesNotExist
 
-class UserSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = ['email', 'username', 'password', 'full_score_photo_url', 'threshould_reward_score', 'threshould_fine_score', 'amount_of_reward', 'amount_of_fine']
-
-        extra_kwargs = {
-            'full_score_photo_url': {
-                'read_only': True
-            },
-            'email': {
-                'write_only': True
-            },
-            'username': {
-                'write_only': True
-            },
-            'password': {
-                'write_only': True
-            }
-        }
-
-    def validate_email(self, value):
-        pattern = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
-        if not re.match(pattern, value):
-            raise serializers.ValidationError('メールアドレスの書式が正しくありません。')
-        try:
-            user = User.objects.get(email=value)
-        except ObjectDoesNotExist:
-            return value
-        else:
-            raise serializers.ValidationError('入力されたメールアドレスはすでに使用されています。')
-
-    def validate_password(self, value):
-        if value == '':
-            raise serializers.ValidationError('パスワードを入力してください')
-        return value
-
-    def validate_username(self, value):
-        if value == '':
-            raise serializers.ValidationError('ユーザー名を入力してください')
-
-        return value
-
-    def create(self, validated_data):
-        # serializer.save() で呼ばれる
-        return User.objects.create_user(email=validated_data["email"], password=validated_data["password"], username=validated_data["username"])
-
-
-
 class RoomPhotoSerializer(serializers.ModelSerializer):
 
     katadzuke_score = serializers.SerializerMethodField()
@@ -81,6 +32,54 @@ class RoomPhotoSerializer(serializers.ModelSerializer):
 
     def get_katadzuke_score(self, instance):
         return instance.get_katadzuke_score()
+
+class UserSerializer(serializers.ModelSerializer):
+
+    full_score_photo = RoomPhotoSerializer()
+    amount_of_reward_this_month = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['email', 'username', 'password', 'threshould_reward_score', 'threshould_fine_score', 'amount_of_reward', 'amount_of_fine', 'full_score_photo', 'amount_of_reward_this_month']
+
+        extra_kwargs = {
+            'email': {
+                'error_messages': {
+                    'blank': 'メールアドレスを入力してください',
+                }
+            },
+            'username': {
+                'write_only': True,
+                'error_messages': {
+                    'blank': 'ユーザー名を入力してください',
+                }
+            },
+            'password': {
+                'write_only': True,
+                'error_messages': {
+                    'blank': 'パスワードを入力してください',
+                }
+            }
+        }
+
+    def validate_email(self, value):
+        pattern = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+        if not re.match(pattern, value):
+            raise serializers.ValidationError('メールアドレスの書式が正しくありません。')
+        try:
+            user = User.objects.get(email=value)
+        except ObjectDoesNotExist:
+            return value
+        else:
+            raise serializers.ValidationError('入力されたメールアドレスはすでに使用されています。')
+
+
+    def create(self, validated_data):
+        return User.objects.create_user(email=validated_data["email"], password=validated_data["password"], username=validated_data["username"])
+
+    def get_amount_of_reward_this_month(self, instance):
+        return instance.get_amount_of_reward_this_month()
+
 
 
 class RewardSerializer(serializers.ModelSerializer):
