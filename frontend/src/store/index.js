@@ -46,10 +46,7 @@ const authModule = {
         url: "/signup/",
         data: payload,
       }).then((response) => {
-        return context.dispatch("signin", {
-          email: response.data.email,
-          password: payload.password,
-        });
+        return response;
       });
     },
     renew() {

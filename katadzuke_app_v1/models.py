@@ -12,7 +12,9 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
+        print("ok1")
         user.save(using=self._db)
+        print("ok2")
 
         today = datetime.date.today()
 
@@ -75,7 +77,7 @@ class User(AbstractUser):
     threshould_fine_score = models.IntegerField(default=30, validators=[MinValueValidator(0), MaxValueValidator(100)])
     amount_of_reward = models.IntegerField(default=500)
     amount_of_fine = models.IntegerField(default=500)
-    full_score_photo = models.OneToOneField('RoomPhoto', on_delete=models.SET_NULL, null=True)
+    full_score_photo = models.OneToOneField('RoomPhoto', on_delete=models.SET_NULL, null=True, blank=True)
 
     objects = UserManager()
 

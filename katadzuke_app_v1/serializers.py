@@ -35,12 +35,12 @@ class RoomPhotoSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
 
-    full_score_photo = RoomPhotoSerializer()
+    # full_score_photo = RoomPhotoSerializer()
     amount_of_reward_this_month = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['email', 'username', 'password', 'threshould_reward_score', 'threshould_fine_score', 'amount_of_reward', 'amount_of_fine', 'full_score_photo', 'amount_of_reward_this_month']
+        fields = ['email', 'username', 'password', 'threshould_reward_score', 'threshould_fine_score', 'amount_of_reward', 'amount_of_fine', 'amount_of_reward_this_month']
 
         extra_kwargs = {
             'email': {
@@ -59,7 +59,7 @@ class UserSerializer(serializers.ModelSerializer):
                 'error_messages': {
                     'blank': 'パスワードを入力してください',
                 }
-            }
+            },
         }
 
     def validate_email(self, value):

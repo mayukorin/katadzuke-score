@@ -103,9 +103,11 @@ class UserCreateAPIView(views.APIView):
 
 
     def post(self, request, *args, **kwargs):
-
+        print("serializer 前")
         serializer = UserSerializer(data=request.data)
+        print("serializer 後")
         serializer.is_valid(raise_exception=True)
+        print("serializer 後")
         serializer.save()
         return Response(serializer.data, status.HTTP_201_CREATED)
 
