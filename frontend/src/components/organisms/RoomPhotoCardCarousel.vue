@@ -47,6 +47,8 @@ export default {
           }
         }
       });
+      console.log("created");
+      console.log(this.$refs.roomPhotoCard[0]);
       this.$refs.roomPhotoCard[0].observeCard();
     });
   },

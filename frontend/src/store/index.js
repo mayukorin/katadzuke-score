@@ -28,6 +28,7 @@ const authModule = {
   },
   actions: {
     signin(context, payload) {
+      console.log("signin");
       return api
         .post("/auth/jwt/create/", {
           email: payload.email,
@@ -35,8 +36,7 @@ const authModule = {
         })
         .then((response) => {
           localStorage.setItem("access", response.data.access);
-          context.dispatch("renew");
-          return context.dispatch("getUserInfo");
+          return context.dispatch("renew");
         });
     },
     signup(context, payload) {
@@ -50,6 +50,7 @@ const authModule = {
       });
     },
     renew() {
+      console.log("renew");
       return api.get("/auth/users/me");
     },
     signout(context) {
@@ -78,11 +79,6 @@ const authModule = {
         console.log(response.data);
         context.commit("setAll", response.data);
         context.commit("reward/setAll", response.data, { root: true });
-        return context.dispatch(
-          "roomPhotos/setFullScoreRoomPhotoURL",
-          response.data,
-          { root: true }
-        );
       });
     },
   },

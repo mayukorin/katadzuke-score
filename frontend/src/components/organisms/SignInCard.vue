@@ -27,6 +27,7 @@ export default {
       return this.$store
         .dispatch("auth/signin", authInfo)
         .then(() => {
+          this.$store.dispatch("auth/getUserInfo");
           let signInSuccessMessage = "ログインしました";
           this.$store.dispatch("flashMessage/setSuccessMessage", {
             messages: [signInSuccessMessage],

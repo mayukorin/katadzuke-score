@@ -28,6 +28,9 @@ export default {
         .dispatch("auth/signup", userInfo)
         .then(() => {
           this.$store.dispatch("auth/signin", userInfo);
+        })
+        .then(() => {
+          this.$store.dispatch("auth/getUserInfo");
           console.log("signin and login succeeded.");
           let signUpSuccessMessage = "アカウント登録が完了しました";
           this.$store.dispatch("flashMessage/setSuccessMessage", {
