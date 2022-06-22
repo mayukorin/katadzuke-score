@@ -6,8 +6,8 @@ from katadzuke_app_v1.models import User, RoomPhoto, Reward
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        # today = datetime.date.today()
-        today = datetime.date(2022, 6, 1)
+        today = datetime.date.today()
+        # today = datetime.date(2022, 6, 1)
         if today.day == 1 or today.weekday() == 0:
             
             users = User.objects.all()
@@ -31,7 +31,8 @@ class Command(BaseCommand):
                 room_photos = RoomPhoto.objects.filter(room_owner=user, filming_date__lt=today)
                 for room_photo in room_photos:
                     print(room_photo.filming_date)
-                    cloudinary.uploader.destroy(room_photo.photo_public_id)
+                    if room_photo.photo_public_id is not None:
+                        cloudinary.uploader.destroy(room_photo.photo_public_id)
                     room_photo.delete()
 
 

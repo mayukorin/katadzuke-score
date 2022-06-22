@@ -49,16 +49,16 @@ export default {
   },
   computed: {
     threshouldRewardScore() {
-      return this.$store.state.auth.threshouldRewardScore;
+      return this.$store.state.reward.threshouldRewardScore;
     },
     threshouldFineScore() {
-      return this.$store.state.auth.threshouldFineScore;
+      return this.$store.state.reward.threshouldFineScore;
     },
     amountOfReward() {
-      return this.$store.state.auth.amountOfReward;
+      return this.$store.state.reward.amountOfReward;
     },
     amountOfFine() {
-      return this.$store.state.auth.amountOfFine;
+      return this.$store.state.reward.amountOfFine;
     },
   },
 };

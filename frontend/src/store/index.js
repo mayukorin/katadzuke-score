@@ -10,19 +10,8 @@ const authModule = {
     email: "",
     username: "",
     isSignIn: false,
-    // TODO: 動的に変化
-    threshouldRewardScore: 0,
-    threshouldFineScore: 0,
-    amountOfReward: 0,
-    amountOfFine: 0,
-    rewardThisMonth: 0,
   },
   mutations: {
-    set(state, payload) {
-      state.email = payload.user.email;
-      state.username = payload.user.username;
-      state.isSignIn = true;
-    },
     setRewardThisMonth(state, payload) {
       state.rewardThisMonth = payload.amount_of_money;
     },
@@ -30,15 +19,16 @@ const authModule = {
       (state.email = ""), (state.username = "");
       state.isSignIn = false;
     },
-    setUserInfo(state, payload) {
-      state.threshouldRewardScore = payload.threshould_reward_score;
-      state.threshouldFineScore = payload.threshould_fine_score;
-      state.amountOfReward = payload.amount_of_reward;
-      state.amountOfFine = payload.amount_of_fine;
+    setAll(state, payload) {
+      console.log("setAll");
+      state.email = payload.email;
+      state.username = payload.username;
+      state.isSignIn = true;
     },
   },
   actions: {
     signin(context, payload) {
+      console.log("signin");
       return api
         .post("/auth/jwt/create/", {
           email: payload.email,
@@ -46,9 +36,7 @@ const authModule = {
         })
         .then((response) => {
           localStorage.setItem("access", response.data.access);
-          context.dispatch("renew");
-          context.dispatch("getRewardThisMonth");
-          return context.dispatch("getUserInfo");
+          return context.dispatch("renew");
         });
     },
     signup(context, payload) {
@@ -58,18 +46,12 @@ const authModule = {
         url: "/signup/",
         data: payload,
       }).then((response) => {
-        // 作成したアカウントを使ってログイン処理もする
-        return context.dispatch("signin", {
-          email: response.data.email,
-          password: payload.password,
-        });
+        return response;
       });
     },
-    renew(context) {
-      return api.get("/auth/users/me").then((response) => {
-        const user = response.data;
-        context.commit("set", { user: user });
-      });
+    renew() {
+      console.log("renew");
+      return api.get("/auth/users/me");
     },
     signout(context) {
       localStorage.removeItem("access");
@@ -95,12 +77,8 @@ const authModule = {
     getUserInfo(context) {
       return api("/user-info/").then((response) => {
         console.log(response.data);
-        context.commit("setUserInfo", response.data);
-        return context.dispatch(
-          "roomPhotos/setFullScoreRoomPhotoURL",
-          response.data,
-          { root: true }
-        );
+        context.commit("setAll", response.data);
+        context.commit("reward/setAll", response.data, { root: true });
       });
     },
   },
@@ -125,8 +103,8 @@ const roomPhotoModule = {
       roomPhoto.photo_url = payload.photo_url;
       roomPhoto.katadzuke_score = payload.katadzuke_score;
     },
-    setFullScoreRoomPhotoURL(state, payload) {
-      state.fullScoreRoomPhotoURL = payload.full_score_photo_url;
+    setFullScoreRoomPhotoURL(state, full_score_photo_url) {
+      state.fullScoreRoomPhotoURL = full_score_photo_url;
       console.log(state.fullScoreRoomPhotoURL);
     },
     clear(state) {
@@ -166,11 +144,56 @@ const roomPhotoModule = {
         },
       }).then((response) => {
         console.log(response);
-        context.commit("setFullScoreRoomPhotoURL", response.data);
+        context.commit("setFullScoreRoomPhotoURL", response.data.photo_url);
       });
     },
     setFullScoreRoomPhotoURL(context, payload) {
-      return context.commit("setFullScoreRoomPhotoURL", payload);
+      return context.commit(
+        "setFullScoreRoomPhotoURL",
+        payload.full_score_photo.photo_url
+      );
+    },
+  },
+};
+
+const rewardModule = {
+  namespaced: true,
+  state: {
+    threshouldRewardScore: 0,
+    threshouldFineScore: 0,
+    amountOfReward: 0,
+    amountOfFine: 0,
+    amountOfRewardThisMonth: 0,
+  },
+  mutations: {
+    setAll(state, payload) {
+      console.log("setAll");
+      console.log(payload);
+      state.threshouldRewardScore = payload.threshould_reward_score;
+      state.threshouldFineScore = payload.threshould_fine_score;
+      state.amountOfReward = payload.amount_of_reward;
+      state.amountOfFine = payload.amount_of_fine;
+      state.amountOfRewardThisMonth = payload.amount_of_reward_this_month;
+    },
+    setAmountOfRewardThisMonth(state, payload) {
+      state.amountOfRewardThisMonth = payload.amount_of_reward_this_month;
+    },
+  },
+  actions: {
+    updateAmountOfRewardThisMonth(context, payload) {
+      return api({
+        method: "post",
+        url: "/reward-this-month-update/",
+        data: {
+          prev_room_photo_score: payload.prevRoomPhotoScore,
+          new_room_photo_score: payload.newRoomPhotoScore,
+        },
+      }).then((response) => {
+        console.log(response);
+        context.commit("setAmountOfRewardThisMonth", {
+          amount_of_reward_this_month: response.data.amount_of_money,
+        });
+      });
     },
   },
 };
@@ -224,6 +247,7 @@ const store = new Vuex.Store({
   modules: {
     roomPhotos: roomPhotoModule,
     auth: authModule,
+    reward: rewardModule,
     flashMessage: flashMessageModule,
   },
 });
