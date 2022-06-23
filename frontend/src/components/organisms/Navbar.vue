@@ -115,6 +115,7 @@ export default {
     // 後でまとめる
     signout() {
       this.$store.dispatch("auth/signout");
+      this.$store.dispatch("roomPhotos/clear");
       this.$store.dispatch("flashMessage/setSuccessMessage", {
         messages: ["ログアウトしました"],
       });

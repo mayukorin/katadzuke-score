@@ -109,6 +109,7 @@ const roomPhotoModule = {
     },
     clear(state) {
       state.roomPhotos = [];
+      state.fullScoreRoomPhotoURL = "";
     },
   },
   actions: {
@@ -152,6 +153,9 @@ const roomPhotoModule = {
         "setFullScoreRoomPhotoURL",
         payload.full_score_photo.photo_url
       );
+    },
+    clear(context) {
+      return context.commit("clear");
     },
   },
 };
