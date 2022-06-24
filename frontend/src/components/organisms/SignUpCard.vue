@@ -24,13 +24,15 @@ export default {
   methods: {
     handleSignUp(userInfo) {
       this.isLoading = true;
-      return this.$store
+      this.$store
         .dispatch("auth/signup", userInfo)
         .then(() => {
-          this.$store.dispatch("auth/signin", userInfo);
+          return this.$store.dispatch("auth/signin", userInfo);
         })
         .then(() => {
-          this.$store.dispatch("auth/getUserInfo");
+          return this.$store.dispatch("auth/getUserInfo");
+        })
+        .then(() => {
           console.log("signin and login succeeded.");
           let signUpSuccessMessage = "アカウント登録が完了しました";
           this.$store.dispatch("flashMessage/setSuccessMessage", {

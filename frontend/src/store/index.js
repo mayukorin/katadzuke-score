@@ -71,12 +71,12 @@ const authModule = {
         url: "/user-info-update/",
         data: payload,
       }).then((response) => {
-        return context.commit("setUserInfo", response.data);
+        return context.commit("setAll", response.data);
       });
     },
     getUserInfo(context) {
       return api("/user-info/").then((response) => {
-        console.log(response.data);
+        console.log("get user info");
         context.commit("setAll", response.data);
         context.commit("reward/setAll", response.data, { root: true });
       });
@@ -240,6 +240,7 @@ const flashMessageModule = {
     setSuccessMessage(context, payload) {
       context.commit("clear");
       context.commit("set", { success: payload.messages });
+      console.log("success!");
     },
     clearMessages(context) {
       context.commit("clear");

@@ -24,10 +24,12 @@ export default {
   methods: {
     handleSignin(authInfo) {
       this.isLoading = true;
-      return this.$store
+      this.$store
         .dispatch("auth/signin", authInfo)
         .then(() => {
-          this.$store.dispatch("auth/getUserInfo");
+          return this.$store.dispatch("auth/getUserInfo");
+        })
+        .then(() => {
           let signInSuccessMessage = "ログインしました";
           this.$store.dispatch("flashMessage/setSuccessMessage", {
             messages: [signInSuccessMessage],
