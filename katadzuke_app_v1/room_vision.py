@@ -32,3 +32,8 @@ def upload_room_photo_to_cloudinary(base64Content):
 
     return response["public_id"], response["url"]
 
+
+def destroy_room_photo_from_cloudinary(photo_public_id):
+
+    cloudinary.uploader.destroy(photo_public_id) 
+

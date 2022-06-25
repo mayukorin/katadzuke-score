@@ -10,7 +10,7 @@ class RoomPhotoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RoomPhoto
-        fields = ['filming_date', 'photo_url', 'percent_of_floors', 'pk', 'katadzuke_score']
+        fields = ['filming_date', 'photo_url', 'percent_of_floors', 'pk', 'katadzuke_score', 'photo_public_id']
 
         extra_kwargs = {
             'filming_date': {

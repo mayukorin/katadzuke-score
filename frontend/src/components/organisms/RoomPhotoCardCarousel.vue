@@ -26,6 +26,7 @@ export default {
       photoIndex: 0,
       cardHeight: 0,
       dayOfWeeks: ["月", "火", "水", "木", "金", "土", "日"],
+      createdDoneFlag: false,
     };
   },
   computed: {
@@ -33,7 +34,7 @@ export default {
       return false;
     },
     roomPhotos() {
-      console.log(this.$store.state.roomPhotos.fullScoreRoomPhotoURL);
+      console.log(this.$store.state.roomPhotos.roomPhotos);
       return this.$store.state.roomPhotos.roomPhotos;
     },
   },
@@ -50,10 +51,12 @@ export default {
       console.log("created");
       console.log(this.$refs.roomPhotoCard[0]);
       this.$refs.roomPhotoCard[0].observeCard();
+      this.createdDoneFlag = true;
     });
   },
   watch: {
     photoIndex: function (newIndex, preIndex) {
+      console.log(newIndex, preIndex);
       (async () => {
         const sleep = (second) =>
           new Promise((resolve) => setTimeout(resolve, second * 1000));

@@ -31,7 +31,7 @@ export default {
   methods: {
     handleUpdate(rewardAndFineInfo) {
       this.isLoading = true;
-      return this.$store
+      this.$store
         .dispatch("auth/updateUserInfo", rewardAndFineInfo)
         .then(() => {
           console.log("signin and login succeeded.");
@@ -40,6 +40,7 @@ export default {
             messages: [updateSuccessMessage],
           });
           const next = "/";
+          console.log("replace");
           this.$router.replace(next);
         })
         .finally(() => {

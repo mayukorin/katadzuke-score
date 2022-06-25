@@ -23,7 +23,8 @@
               </div>
             </v-card-text>
             <RoomPhotoUploadButton @select-file="selectedFile">
-              部屋の写真変更
+              <span v-if="roomPhoto.photo_url === null">部屋の写真投稿</span>
+              <span v-else>部屋の写真変更</span>
             </RoomPhotoUploadButton>
           </div>
           <div class="text-center aspect d-flex align-center justify-center">
@@ -94,7 +95,7 @@ export default {
     },
     getPhotoURL(photo_url) {
       if (photo_url == null) {
-        // ToDo: 変数で表示
+        // TODO: 変数で表示
         return "https://res.cloudinary.com/dqyodswnq/image/upload/v1654651923/no_image_htu0nq.png";
       } else {
         return photo_url;
@@ -110,9 +111,11 @@ export default {
           console.log(file);
           let reader = new FileReader();
           let prevRoomPhotoScore = this.roomPhoto.katadzuke_score;
+          console.log("prev");
+          console.log(prevRoomPhotoScore);
           reader.onload = (event) => {
             let base64Text = event.currentTarget.result;
-            return this.$store
+            this.$store
               .dispatch("roomPhotos/upload", {
                 roomPhotoBase64Content: base64Text,
                 roomPhotoPk: this.roomPhoto.pk,

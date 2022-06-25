@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 import numpy as np
-from .room_vision import calc_percent_of_floors, upload_room_photo_to_cloudinary
+from .room_vision import calc_percent_of_floors, upload_room_photo_to_cloudinary, destroy_room_photo_from_cloudinary
 import base64, datetime, cloudinary
 from django.db.models import Q
 # Create your views here.
@@ -24,26 +24,20 @@ class RoomPhotoCreateAPIView(views.APIView):
 
     def post(self, request, pk, *args, **kwargs):
         
-        # serializer 使うように後で変更
+        # TODO: serializer 使うように変更．serializer.save()のところに入れれば OK
         # 認可を後で追加
-        # room_photo の update と，reward の update は別にした方が良い？
-        room_photo = RoomPhoto.objects.get(pk=pk) 
-        # reward_this_month = Reward.objects.get(recipient=request.user, month=room_photo.filming_date.month)
+        room_photo = RoomPhoto.objects.get(pk=pk)
+        serializer = RoomPhotoSerializer(instance=room_photo, data={}, partial=True)
+        serializer.is_valid(raise_exception=True)
 
         if room_photo.photo_public_id is not None:
 
-            room_photo.destroy_room_photo_from_cloudinary()
-            room_photo.reset_percent_of_floors_and_photo_public_id_and_photo_url()
-            # reward_this_month.remove_reflection_of_room_photo_score_from_amount_of_money(room_photo)
-
+            destroy_room_photo_from_cloudinary(room_photo.photo_public_id)
+           
         public_id, url = upload_room_photo_to_cloudinary(request.data["roomPhotoBase64Content"])
         percent_of_floors = calc_percent_of_floors(request.data["roomPhotoBase64Content"])
-        room_photo = room_photo.set_percent_of_floors_and_photo_public_id_and_photo_url(percent_of_floors, public_id, url)
         
-        # reward_this_month.reflect_room_photo_score_to_amount_of_money(room_photo)
-
-        serializer = RoomPhotoSerializer(instance=room_photo)
-       
+        serializer.save(photo_public_id=public_id, percent_of_floors=percent_of_floors, photo_url=url)
 
         return Response(serializer.data, status.HTTP_201_CREATED)
 
@@ -58,7 +52,8 @@ class RewardThisMonthUpdateAPIView(views.APIView):
         reward_this_month = Reward.objects.get(recipient=request.user, month=today.month)
         print(request.data["prev_room_photo_score"])
         print(request.data["new_room_photo_score"])
-        reward_this_month = reward_this_month.remove_reflection_of_room_photo_score_from_amount_of_money(request.data["prev_room_photo_score"])
+        if request.data["prev_room_photo_score"] is not None:
+            reward_this_month = reward_this_month.remove_reflection_of_room_photo_score_from_amount_of_money(request.data["prev_room_photo_score"])
         reward_this_month.reflect_room_photo_score_to_amount_of_money(request.data["new_room_photo_score"])
 
         serializer = RewardSerializer(instance=reward_this_month)
