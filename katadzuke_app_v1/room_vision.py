@@ -37,3 +37,24 @@ def destroy_room_photo_from_cloudinary(photo_public_id):
 
     cloudinary.uploader.destroy(photo_public_id) 
 
+def reflect_room_photo_score_to_amount_of_money(user, new_room_photo_score):
+
+    add_amount_of_money = 0
+
+    if new_room_photo_score <= user.threshould_fine_score:
+        add_amount_of_money -= user.amount_of_fine
+    elif new_room_photo_score >= user.threshould_reward_score:
+        add_amount_of_money += user.amount_of_reward
+        
+    return add_amount_of_money
+
+def remove_reflection_of_room_photo_score_from_amount_of_money(user, prev_room_photo_score):
+
+    remove_amount_of_money = 0
+
+    if prev_room_photo_score <= user.threshould_fine_score:
+        remove_amount_of_money -= user.amount_of_fine
+    elif prev_room_photo_score >= user.threshould_reward_score:
+        remove_amount_of_money += user.amount_of_reward
+
+    return remove_amount_of_money

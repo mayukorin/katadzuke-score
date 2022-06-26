@@ -7,16 +7,10 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 import numpy as np
-from .room_vision import calc_percent_of_floors, upload_room_photo_to_cloudinary, destroy_room_photo_from_cloudinary
+from .room_vision import calc_percent_of_floors, upload_room_photo_to_cloudinary, destroy_room_photo_from_cloudinary, reflect_room_photo_score_to_amount_of_money, remove_reflection_of_room_photo_score_from_amount_of_money
 import base64, datetime, cloudinary
 from django.db.models import Q
 # Create your views here.
-
-THRESHOULD_REWARD_SCORE = 60
-THRESHOULD_FINE_SCORE = 20
-
-AMOUNT_OF_REWARD = 100
-AMOUNT_OF_FINE = 200
 
 class RoomPhotoCreateAPIView(views.APIView):
 
@@ -39,7 +33,7 @@ class RoomPhotoCreateAPIView(views.APIView):
         
         serializer.save(photo_public_id=public_id, percent_of_floors=percent_of_floors, photo_url=url)
 
-        return Response(serializer.data, status.HTTP_201_CREATED)
+        return Response(serializer.data, status.HTTP_200_OK)
 
 class RewardThisMonthUpdateAPIView(views.APIView):
 
@@ -50,36 +44,18 @@ class RewardThisMonthUpdateAPIView(views.APIView):
 
         today = datetime.date.today()
         reward_this_month = Reward.objects.get(recipient=request.user, month=today.month)
-        print(request.data["prev_room_photo_score"])
-        print(request.data["new_room_photo_score"])
-        if request.data["prev_room_photo_score"] is not None:
-            reward_this_month = reward_this_month.remove_reflection_of_room_photo_score_from_amount_of_money(request.data["prev_room_photo_score"])
-        reward_this_month.reflect_room_photo_score_to_amount_of_money(request.data["new_room_photo_score"])
-
         serializer = RewardSerializer(instance=reward_this_month)
+
+        add_amount_this_month = 0
+        
+        if request.data["prev_room_photo_score"] is not None:
+            add_amount_this_month = reflect_room_photo_score_to_amount_of_money(request.user, request.data["new_room_photo_score"]) - remove_reflection_of_room_photo_score_from_amount_of_money(request.user, request.data["prev_room_photo_score"])
+            
+        serializer.save(amount_of_money=reward_this_month.amount_of_money + add_amount_this_month )
+
         return Response(serializer.data, status.HTTP_201_CREATED)
 
 
-
-
-class FullScoreRoomPhotoUploadAPIView(views.APIView):
-
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-
-        signin_user = request.user
-        if signin_user.full_score_photo.photo_public_id is not None:
-            signin_user.full_score_photo.destroy_room_photo_from_cloudinary()
-
-
-        public_id, url = upload_room_photo_to_cloudinary(request.data["roomPhotoBase64Content"])
-        percent_of_floors = calc_percent_of_floors(request.data["roomPhotoBase64Content"])
-        signin_user.full_score_photo.set_percent_of_floors_and_photo_public_id_and_photo_url(percent_of_floors, public_id, url)
-
-        serializer = RoomPhotoSerializer(instance=signin_user.full_score_photo)
-
-        return Response(serializer.data, status.HTTP_201_CREATED) # TODO: CREATED?
 
 
 class RoomPhotoListAPIView(views.APIView):

@@ -13,7 +13,7 @@
       >
     </v-form>
     現在の100点満点の部屋 <br />
-    <v-img :src="editedFullScoreRoomPhotoUrl" />
+    <v-img :src="editedFullScoreRoomPhotoUrl" aspect-ratio="0.7" contain />
   </div>
 </template>
 
