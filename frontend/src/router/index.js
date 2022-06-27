@@ -1,6 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import HomeView from "../views/HomeView.vue";
+import HomeView from "@/components/templates/HomeView";
 import SignUp from "@/components/templates/SignUpView";
 import SignIn from "@/components/templates/SignInView";
 import FullScoreRoomPhotoUpload from "@/components/templates/FullScoreRoomPhotoUploadView";

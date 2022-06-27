@@ -30,9 +30,6 @@ export default {
     };
   },
   computed: {
-    isSignIn() {
-      return false;
-    },
     roomPhotos() {
       console.log(this.$store.state.roomPhotos.roomPhotos);
       return this.$store.state.roomPhotos.roomPhotos;

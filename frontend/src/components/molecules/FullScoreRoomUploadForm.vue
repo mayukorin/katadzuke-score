@@ -8,7 +8,7 @@
       <ContainedButton
         @click="handleUpload"
         :is-loading="isLoading"
-        :disable-flag="base64FullScoreRoomPhoto == ''"
+        :disable-flag="base64FullScoreRoomPhoto === ''"
         >アップロード</ContainedButton
       >
     </v-form>

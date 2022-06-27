@@ -68,7 +68,6 @@ export default {
       if (!this.$refs.form.validate()) {
         return;
       }
-      console.log("ok");
       this.$emit("signup-button-click", {
         email: this.form.email,
         username: this.form.username,

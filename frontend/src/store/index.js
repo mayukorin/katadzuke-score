@@ -12,9 +12,6 @@ const authModule = {
     isSignIn: false,
   },
   mutations: {
-    setRewardThisMonth(state, payload) {
-      state.rewardThisMonth = payload.amount_of_money;
-    },
     clear(state) {
       (state.email = ""), (state.username = "");
       state.isSignIn = false;
@@ -56,13 +53,6 @@ const authModule = {
     signout(context) {
       localStorage.removeItem("access");
       context.commit("clear");
-    },
-    getRewardThisMonth(context) {
-      return api.get("/reward-this-month/").then((response) => {
-        console.log(response.data);
-        context.commit("setRewardThisMonth", response.data);
-        return response.data;
-      });
     },
     updateUserInfo(context, payload) {
       console.log(payload);
