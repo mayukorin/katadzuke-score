@@ -7,13 +7,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katadzuke_app_v1', '0007_auto_20220611_2356'),
+        ("katadzuke_app_v1", "0007_auto_20220611_2356"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='full_score_room_percent_of_floors',
-            field=models.IntegerField(null=True, validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)]),
+            model_name="user",
+            name="full_score_room_percent_of_floors",
+            field=models.IntegerField(
+                null=True,
+                validators=[
+                    django.core.validators.MinValueValidator(0),
+                    django.core.validators.MaxValueValidator(100),
+                ],
+            ),
         ),
     ]
