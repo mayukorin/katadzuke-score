@@ -22,6 +22,9 @@ const authModule = {
       state.username = payload.username;
       state.isSignIn = true;
     },
+    setIsSignIn(state) {
+      state.isSignIn = true;
+    },
   },
   actions: {
     signin(context, payload) {
@@ -46,9 +49,11 @@ const authModule = {
         return response;
       });
     },
-    renew() {
+    renew(context) {
       console.log("renew");
-      return api.get("/auth/users/me");
+      return api.get("/auth/users/me").then(() => {
+        context.commit("setIsSignIn");
+      });
     },
     signout(context) {
       localStorage.removeItem("access");
@@ -61,7 +66,7 @@ const authModule = {
         url: "/user-info-update/",
         data: payload,
       }).then((response) => {
-        return context.commit("setAll", response.data);
+        return context.commit("reward/setAll", response.data, { root: true });
       });
     },
     getUserInfo(context) {
