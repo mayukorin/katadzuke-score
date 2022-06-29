@@ -63,7 +63,7 @@ class RewardThisMonthUpdateAPIView(views.APIView):
         reward_this_month = Reward.objects.get(
             recipient=request.user, month=today.month
         )
-        serializer = RewardSerializer(instance=reward_this_month)
+        serializer = RewardSerializer(instance=reward_this_month, data={}, partial=True)
 
         add_amount_this_month = 0
 
@@ -81,6 +81,8 @@ class RewardThisMonthUpdateAPIView(views.APIView):
                 request.user.amount_of_reward,
                 request.data["prev_room_photo_score"],
             )
+
+        serializer.is_valid(raise_exception=True)
 
         serializer.save(
             amount_of_money=reward_this_month.amount_of_money + add_amount_this_month
