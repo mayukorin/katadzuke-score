@@ -204,6 +204,44 @@ const rewardModule = {
   },
 };
 
+const floorPhotoModule = {
+  namespaced: true,
+  state: {
+    floorPhoto: null,
+  },
+  mutations: {
+    set(state, payload) {
+      state.floorPhoto = payload;
+    },
+    clear(state) {
+      state.floorPhoto = null;
+    },
+  },
+  actions: {
+    uploadFloorPhoto(context, payload) {
+      return api({
+        method: "post",
+        url: "/floor-photos/" + payload.floorPhotoPk + "/floor-photo-upload/",
+        data: {
+          floorPhotoBase64Content: payload.floorPhotoBase64Content,
+        },
+      }).then((response) => {
+        console.log(response);
+        context.commit("set", response.data);
+      });
+    },
+    get(context) {
+      return api({
+        method: "get",
+        url: "/floor-photos/",
+      }).then((response) => {
+        console.log(response);
+        context.commit("set", response.data);
+      });
+    },
+  },
+};
+
 const flashMessageModule = {
   namespaced: true,
   state: {
@@ -256,6 +294,7 @@ const store = new Vuex.Store({
     auth: authModule,
     reward: rewardModule,
     flashMessage: flashMessageModule,
+    floorPhoto: floorPhotoModule,
   },
 });
 

@@ -1,6 +1,6 @@
 import katadzuke_app_v1
 from rest_framework import serializers
-from .models import RoomPhoto, User, Reward
+from .models import RoomPhoto, User, Reward, FloorPhoto
 import re
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -30,6 +30,26 @@ class RoomPhotoSerializer(serializers.ModelSerializer):
 
     def get_katadzuke_score(self, instance):
         return instance.get_katadzuke_score()
+
+
+class FloorPhotoSerializer(serializers.ModelSerializer):
+
+    # TODO: FloorPhoto を複数持つ場合は，create で新しく作るため，photo_owner のフィールドいる
+    class Meta:
+        model = FloorPhoto
+        fields = [
+            "photo_url",
+            "pk",
+            "photo_public_id",
+        ]
+
+        extra_kwargs = {
+            "photo_url": {"read_only": True},
+            "pk": {"read_only": True},
+            "photo_public_id": {"read_only": True},
+        }
+
+    
 
 
 class UserSerializer(serializers.ModelSerializer):

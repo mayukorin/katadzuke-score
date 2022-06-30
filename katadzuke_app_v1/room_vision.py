@@ -29,14 +29,14 @@ def calc_percent_of_floors(base64_img):
     return math.floor(floor_cnt_of_pixels / total_cnt_of_pixels * 100)
 
 
-def upload_room_photo_to_cloudinary(base64Content):
+def upload_photo_to_cloudinary(base64Content):
 
     response = cloudinary.uploader.upload(file=base64Content)
 
     return response["public_id"], response["url"]
 
 
-def destroy_room_photo_from_cloudinary(photo_public_id):
+def destroy_photo_from_cloudinary(photo_public_id):
 
     cloudinary.uploader.destroy(photo_public_id)
 

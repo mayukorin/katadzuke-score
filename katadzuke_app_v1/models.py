@@ -155,6 +155,12 @@ class RoomPhoto(models.Model):
 
         cloudinary.uploader.destroy(self.photo_public_id)
 
+class FloorPhoto(models.Model):
+
+    photo_url = models.CharField(null=True, blank=True, max_length=255)
+    photo_public_id = models.CharField(null=True, blank=True, max_length=255)
+    photo_owner = models.ForeignKey(User, on_delete=models.CASCADE)
+
 
 class Reward(models.Model):
 

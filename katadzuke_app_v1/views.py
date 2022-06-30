@@ -1,7 +1,7 @@
 from importlib.util import spec_from_file_location
 from logging import raiseExceptions
-from .serializers import UserSerializer, RoomPhotoSerializer, RewardSerializer
-from .models import RoomPhoto, Reward
+from .serializers import UserSerializer, RoomPhotoSerializer, RewardSerializer, FloorPhotoSerializer
+from .models import RoomPhoto, Reward, FloorPhoto
 from rest_framework import views, status
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, JSONParser
@@ -9,8 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 import numpy as np
 from .room_vision import (
     calc_percent_of_floors,
-    upload_room_photo_to_cloudinary,
-    destroy_room_photo_from_cloudinary,
+    upload_photo_to_cloudinary,
+    destroy_photo_from_cloudinary,
     reflect_room_photo_score_to_amount_of_money,
     remove_reflection_of_room_photo_score_from_amount_of_money,
 )
@@ -34,9 +34,9 @@ class RoomPhotoCreateAPIView(views.APIView):
 
         if room_photo.photo_public_id is not None:
 
-            destroy_room_photo_from_cloudinary(room_photo.photo_public_id)
+            destroy_photo_from_cloudinary(room_photo.photo_public_id)
 
-        public_id, url = upload_room_photo_to_cloudinary(
+        public_id, url = upload_photo_to_cloudinary(
             request.data["roomPhotoBase64Content"]
         )
         percent_of_floors = calc_percent_of_floors(
@@ -101,6 +101,44 @@ class RoomPhotoListAPIView(views.APIView):
             ~Q(pk=request.user.full_score_photo.pk)
         )
         serializer = RoomPhotoSerializer(instance=user_room_photos, many=True)
+
+        return Response(serializer.data, status.HTTP_200_OK)
+
+class FloorPhotoGetAPIView(views.APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *arga, **kwargs):
+
+        floor_photo = FloorPhoto.objects.get(photo_owner=request.user)
+        print(floor_photo)
+        serializer = FloorPhotoSerializer(instance=floor_photo)
+
+        return Response(serializer.data, status.HTTP_200_OK)
+
+class FloorPhotoUploadAPIView(views.APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk, *args, **kwargs):
+        
+        # TODO: 認可追加
+        floor_photo = FloorPhoto.objects.get(pk=pk)
+        serializer = FloorPhotoSerializer(instance=floor_photo, data={}, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        if floor_photo.photo_public_id is not None:
+
+            destroy_photo_from_cloudinary(floor_photo.photo_public_id)
+
+        public_id, url = upload_photo_to_cloudinary(
+            request.data["floorPhotoBase64Content"]
+        )
+
+        serializer.save(
+            photo_public_id=public_id,
+            photo_url=url,
+        )
 
         return Response(serializer.data, status.HTTP_200_OK)
 
