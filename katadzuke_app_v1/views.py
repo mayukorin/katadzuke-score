@@ -1,7 +1,7 @@
 from importlib.util import spec_from_file_location
 from logging import raiseExceptions
 from .serializers import UserSerializer, RoomPhotoSerializer, RewardSerializer, FloorPhotoSerializer
-from .models import RoomPhoto, Reward, FloorPhoto
+from .models import RoomPhoto, Reward, FloorPhoto, FloorHueRange
 from rest_framework import views, status
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, JSONParser
@@ -39,8 +39,20 @@ class RoomPhotoCreateAPIView(views.APIView):
         public_id, url = upload_photo_to_cloudinary(
             request.data["roomPhotoBase64Content"]
         )
+
+        floor_hue_ranges = FloorHueRange.objects.filter(user=request.user)
+
+        floor_hue_ranges_list = []
+
+        for floor_hue_range in floor_hue_ranges:
+            floor_hue_ranges_list.append(floor_hue_range.min_hue)
+            floor_hue_ranges_list.append(floor_hue_range.max_hue)
+
+        print(floor_hue_ranges_list)
+
         percent_of_floors = calc_percent_of_floors(
-            request.data["roomPhotoBase64Content"]
+            request.data["roomPhotoBase64Content"],
+            floor_hue_ranges_list
         )
 
         serializer.save(

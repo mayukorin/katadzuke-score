@@ -32,6 +32,8 @@ class Command(BaseCommand):
                 )
                 for room_photo in room_photos:
                     print(room_photo.filming_date)
+                    if user.full_score_photo.pk == room_photo.pk:
+                        continue
                     if room_photo.photo_public_id is not None:
                         cloudinary.uploader.destroy(room_photo.photo_public_id)
                     room_photo.delete()

@@ -161,6 +161,13 @@ class FloorPhoto(models.Model):
     photo_public_id = models.CharField(null=True, blank=True, max_length=255)
     photo_owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
+class FloorHueRange(models.Model):
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    min_hue = models.IntegerField(default=14, validators=[MinValueValidator(0), MaxValueValidator(720)])
+    max_hue = models.IntegerField(default=17, validators=[MinValueValidator(0), MaxValueValidator(720)])
+
+
 
 class Reward(models.Model):
 

@@ -4,17 +4,39 @@ import numpy as np
 
 
 @numba.jit
-def cnt_floor_cnt_of_pixels(hsv):
+def cnt_floor_cnt_of_pixels(hsv, floor_hue_ranges_list):
     cnt = 0
     for h in range(hsv.shape[0]):
         for w in range(hsv.shape[1]):
-            # print(hsv[h, w, 0])
-            if 17 >= hsv[h, w, 0] and hsv[h, w, 0] >= 14:
+            # print(hsv[h, w, 0])5
+            hue_value = hsv[h, w, 0]
+            is_floor = False
+            
+            for index in range(0, len(floor_hue_ranges_list), 2):
+                hue_min = floor_hue_ranges_list[index]
+                hue_max = floor_hue_ranges_list[index+1]
+                if hue_max >= hue_value and hue_value >= hue_min:
+                    is_floor = True
+                if hue_max >= hue_value + 360 and hue_value + 360 >= hue_min:
+                    is_floor = True 
+            if is_floor:
                 cnt += 1
+            '''
+            hue_min = 14
+            hue_max = 17
+            if hue_max >= hue_value and hue_value >= hue_min:
+                is_floor = True
+            if hue_max >= hue_value + 360 and hue_value + 360 >= hue_min:
+                is_floor = True 
+            if is_floor:
+                cnt += 1
+            '''
+
+    print("ok")
     return cnt
 
 
-def calc_percent_of_floors(base64_img):
+def calc_percent_of_floors(base64_img, floor_hue_ranges_list):
 
     np_upload_room_photo = np.asarray(
         bytearray(base64.b64decode(base64_img.split(",")[1])), dtype="uint8"
@@ -24,7 +46,7 @@ def calc_percent_of_floors(base64_img):
     print("ここまで")
 
     total_cnt_of_pixels = hsv.shape[0] * hsv.shape[1]
-    floor_cnt_of_pixels = cnt_floor_cnt_of_pixels(hsv)
+    floor_cnt_of_pixels = cnt_floor_cnt_of_pixels(hsv, floor_hue_ranges_list)
 
     return math.floor(floor_cnt_of_pixels / total_cnt_of_pixels * 100)
 
