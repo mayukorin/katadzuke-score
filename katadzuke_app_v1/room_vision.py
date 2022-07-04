@@ -1,6 +1,8 @@
 from statistics import median
 import numba, base64, cv2, math, cloudinary
 import numpy as np
+from numba.typed import Dict
+from numba.types import types
 
 
 @numba.jit
@@ -49,6 +51,65 @@ def calc_percent_of_floors(base64_img, floor_hue_ranges_list):
     floor_cnt_of_pixels = cnt_floor_cnt_of_pixels(hsv, floor_hue_ranges_list)
 
     return math.floor(floor_cnt_of_pixels / total_cnt_of_pixels * 100)
+
+@numba.jit
+def get_hsv_value_list(base64_img):
+
+    np_upload_room_photo = np.asarray(
+        bytearray(base64.b64decode(base64_img.split(",")[1])), dtype="uint8"
+    )
+    img = cv2.imdecode(np_upload_room_photo, cv2.IMREAD_COLOR)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    area = np.int64(hsv.shape[0] * hsv.shape[1])
+
+    hsv_value_dict = Dict.empty(key_type=types.int64,value_type=types.int64)
+    # hsv_value_dict = {}
+    cnt = 0
+    for h in range(hsv.shape[0]):
+        for w in range(hsv.shape[1]):
+            if hsv_value_dict.get(np.int64(hsv[h, w, 0])) is None:
+                hsv_value_dict[np.int64(hsv[h, w, 0])] = 1
+            else:
+                hsv_value_dict[np.int64(hsv[h, w, 0])] += 1
+    
+    return hsv_value_dict
+
+
+@numba.jit
+def get_hsv_value_list2(base64_img):
+
+    np_upload_room_photo = np.asarray(
+        bytearray(base64.b64decode(base64_img.split(",")[1])), dtype="uint8"
+    )
+    img = cv2.imdecode(np_upload_room_photo, cv2.IMREAD_COLOR)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    area = np.int64(hsv.shape[0] * hsv.shape[1])
+
+    hsv_value_dict = Dict.empty(key_type=types.int64,value_type=types.int64)
+    # hsv_value_dict = {}
+    cnt = 0
+    for h in range(hsv.shape[0]):
+        for w in range(hsv.shape[1]):
+            if hsv_value_dict.get(np.int64(hsv[h, w, 0])) is None:
+                hsv_value_dict[np.int64(hsv[h, w, 0])] = 1
+            else:
+                hsv_value_dict[np.int64(hsv[h, w, 0])] += 1
+    '''
+    hsv_value_dict = Dict.empty(key_type=types.int64,value_type=types.int64)
+    for h in range(hsv.shape[0]):
+        for w in range(hsv.shape[1]):
+            hsv_value_dict[np.int64(hsv[h, w, 0])] += np.int64(1)
+    '''
+
+    hsv_value_list = []
+    for hsv_value in hsv_value_dict:
+        if hsv_value_dict[hsv_value] >= area*0.3: # TODO: 何パーセントとかで
+            hsv_value_list.append(hsv_value)
+
+    return hsv_value_list
+
 
 
 def upload_photo_to_cloudinary(base64Content):
