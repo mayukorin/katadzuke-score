@@ -7,22 +7,20 @@ from numba.types import types
 
 @numba.jit
 def cnt_floor_cnt_of_pixels(hsv, floor_hue_ranges_list):
-    cnt = 0
+    floor_cnt = 0
     for h in range(hsv.shape[0]):
         for w in range(hsv.shape[1]):
             # print(hsv[h, w, 0])5
             hue_value = hsv[h, w, 0]
-            is_floor = False
             
             for index in range(0, len(floor_hue_ranges_list), 2):
                 hue_min = floor_hue_ranges_list[index]
                 hue_max = floor_hue_ranges_list[index+1]
                 if hue_max >= hue_value and hue_value >= hue_min:
-                    is_floor = True
-                if hue_max >= hue_value + 360 and hue_value + 360 >= hue_min:
-                    is_floor = True 
-            if is_floor:
-                cnt += 1
+                    floor_cnt += 1
+                elif hue_max >= hue_value + 360 and hue_value + 360 >= hue_min:
+                    floor_cnt += 1
+
             '''
             hue_min = 14
             hue_max = 17
@@ -35,7 +33,7 @@ def cnt_floor_cnt_of_pixels(hsv, floor_hue_ranges_list):
             '''
 
     print("ok")
-    return cnt
+    return floor_cnt
 
 
 def calc_percent_of_floors(base64_img, floor_hue_ranges_list):
@@ -105,7 +103,7 @@ def get_hsv_value_list2(base64_img):
 
     hsv_value_list = []
     for hsv_value in hsv_value_dict:
-        if hsv_value_dict[hsv_value] >= area*0.3: # TODO: 何パーセントとかで
+        if hsv_value_dict[hsv_value] >= area*0.3: 
             hsv_value_list.append(hsv_value)
 
     return hsv_value_list
@@ -158,3 +156,28 @@ def remove_reflection_of_room_photo_score_from_amount_of_money(
         remove_amount_of_money += amount_of_reward
 
     return remove_amount_of_money
+
+
+def calc_floor_hue_cnt_list(floor_hue_ranges, new_floor_photo_hue_cnt_list):
+
+    floor_hue_cnt_list = [0] * 721
+
+    for floor_hue_range in floor_hue_ranges:
+            floor_hue_cnt_list[floor_hue_range.min_hue] += 1
+            floor_hue_cnt_list[floor_hue_range.max_hue+1] -= 1
+       
+
+    for hsv_value in new_floor_photo_hue_cnt_list:
+        if hsv_value -2 < 0:
+            hsv_value += 360
+        hsv_min = hsv_value - 2
+        hsv_max = hsv_value + 2
+
+        floor_hue_cnt_list[hsv_min] += 1
+        floor_hue_cnt_list[hsv_max+1] -= 1
+
+    for hsv_value in range(1, 720):
+        
+        floor_hue_cnt_list[hsv_value] = floor_hue_cnt_list[hsv_value-1] + floor_hue_cnt_list[hsv_value]
+
+    return floor_hue_cnt_list
