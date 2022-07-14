@@ -13,10 +13,8 @@ from .room_vision import (
     destroy_photo_from_cloudinary,
     reflect_room_photo_score_to_amount_of_money,
     remove_reflection_of_room_photo_score_from_amount_of_money,
-    get_hsv_value_list,
-    get_hsv_value_list2,
-    calc_floor_hue_cnt_list,
-    calc_new_floor_photo_hue_cnt_list
+    calc_upload_floor_photo_hue_cnt_list,
+    merge_floor_hue_ranges_into_upload_floor_photo_hue_cnt_list,
 )
 import base64, datetime, cloudinary
 from django.db.models import Q
@@ -157,15 +155,16 @@ class FloorPhotoUploadAPIView(views.APIView):
         )
 
 
-        floor_hue_ranges = FloorHueRange.objects.filter(user=request.user)
 
-        hue_floor_pixel_cnt_list = calc_floor_hue_cnt_list(floor_hue_ranges, calc_new_floor_photo_hue_cnt_list(request.data["floorPhotoBase64Content"]))
+
+        floor_hue_ranges = FloorHueRange.objects.filter(user=request.user)
+        hue_floor_pixel_cnt_list = merge_floor_hue_ranges_into_upload_floor_photo_hue_cnt_list(floor_hue_ranges, calc_upload_floor_photo_hue_cnt_list(request.data["floorPhotoBase64Content"]))
 
         floor_hue_ranges.delete()
 
         pre_hue_value = -1
+        is_floor_hue = False
         for hue_value, floor_pixel_cnt in enumerate(hue_floor_pixel_cnt_list):
-
             if is_floor_hue:
                 if floor_pixel_cnt <= 0:
                     print(hue_value)
@@ -176,8 +175,6 @@ class FloorPhotoUploadAPIView(views.APIView):
                     floor_hue_range.save()
                     print(floor_hue_range.min_hue)
                     print(floor_hue_range.min_hue)
-
-
                     is_floor_hue = False
 
             else:
@@ -185,6 +182,7 @@ class FloorPhotoUploadAPIView(views.APIView):
                     print(hue_value)
                     is_floor_hue = True
                     pre_hue_value = hue_value
+
 
 
         return Response(serializer.data, status.HTTP_200_OK)
