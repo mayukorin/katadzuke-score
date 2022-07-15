@@ -3,6 +3,7 @@ import numba, base64, cv2, math, cloudinary
 import numpy as np
 from numba.typed import Dict
 from numba.types import types
+from .models import FloorHueRange
 
 
 @numba.jit
@@ -138,3 +139,25 @@ def merge_floor_hue_ranges_into_upload_floor_photo_hue_cnt_list(floor_hue_ranges
         floor_hue_cnt_list[hsv_value] = floor_hue_cnt_list[hsv_value-1] + floor_hue_cnt_list[hsv_value]
 
     return floor_hue_cnt_list
+
+def create_new_hue_ranges_model(hue_floor_pixel_cnt_list, user):
+
+    pre_hue_value = -1
+    is_floor_hue = False
+    for hue_value, floor_pixel_cnt in enumerate(hue_floor_pixel_cnt_list):
+        if is_floor_hue:
+            if floor_pixel_cnt <= 0:
+                print(hue_value)
+                floor_hue_range = FloorHueRange()
+                floor_hue_range.user = user
+                floor_hue_range.min_hue = pre_hue_value
+                floor_hue_range.max_hue = hue_value - 1
+                floor_hue_range.save()
+                print(floor_hue_range.min_hue)
+                print(floor_hue_range.min_hue)
+                is_floor_hue = False
+
+        else:
+            if floor_pixel_cnt > 0:
+                print(hue_value)
+                is_floor_hue = True

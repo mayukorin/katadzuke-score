@@ -15,6 +15,7 @@ from .room_vision import (
     remove_reflection_of_room_photo_score_from_amount_of_money,
     calc_upload_floor_photo_hue_cnt_list,
     merge_floor_hue_ranges_into_upload_floor_photo_hue_cnt_list,
+    create_new_hue_ranges_model
 )
 import base64, datetime, cloudinary
 from django.db.models import Q
@@ -162,27 +163,7 @@ class FloorPhotoUploadAPIView(views.APIView):
 
         floor_hue_ranges.delete()
 
-        pre_hue_value = -1
-        is_floor_hue = False
-        for hue_value, floor_pixel_cnt in enumerate(hue_floor_pixel_cnt_list):
-            if is_floor_hue:
-                if floor_pixel_cnt <= 0:
-                    print(hue_value)
-                    floor_hue_range = FloorHueRange()
-                    floor_hue_range.user = request.user
-                    floor_hue_range.min_hue = pre_hue_value
-                    floor_hue_range.max_hue = hue_value - 1
-                    floor_hue_range.save()
-                    print(floor_hue_range.min_hue)
-                    print(floor_hue_range.min_hue)
-                    is_floor_hue = False
-
-            else:
-                if floor_pixel_cnt > 0:
-                    print(hue_value)
-                    is_floor_hue = True
-                    pre_hue_value = hue_value
-
+        create_new_hue_ranges_model(hue_floor_pixel_cnt_list, request.user)
 
 
         return Response(serializer.data, status.HTTP_200_OK)
