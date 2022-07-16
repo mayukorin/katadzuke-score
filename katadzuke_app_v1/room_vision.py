@@ -144,20 +144,20 @@ def create_new_hue_ranges_model(hue_floor_pixel_cnt_list, user):
 
     pre_hue_value = -1
     is_floor_hue = False
+    print(hue_floor_pixel_cnt_list)
     for hue_value, floor_pixel_cnt in enumerate(hue_floor_pixel_cnt_list):
         if is_floor_hue:
             if floor_pixel_cnt <= 0:
-                print(hue_value)
                 floor_hue_range = FloorHueRange()
                 floor_hue_range.user = user
                 floor_hue_range.min_hue = pre_hue_value
                 floor_hue_range.max_hue = hue_value - 1
                 floor_hue_range.save()
                 print(floor_hue_range.min_hue)
-                print(floor_hue_range.min_hue)
+                print(floor_hue_range.max_hue)
                 is_floor_hue = False
 
         else:
             if floor_pixel_cnt > 0:
-                print(hue_value)
+                pre_hue_value = hue_value
                 is_floor_hue = True
