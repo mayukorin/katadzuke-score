@@ -36,9 +36,6 @@ export default {
           this.$store.dispatch("flashMessage/setSuccessMessage", {
             messages: [updateSuccessMessage],
           });
-          const next = "/";
-          console.log("replace");
-          this.$router.replace(next);
         })
         .finally(() => {
           this.isLoading = false;
