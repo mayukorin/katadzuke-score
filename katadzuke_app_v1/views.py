@@ -17,7 +17,7 @@ from .room_vision import (
     merge_floor_hue_ranges_into_upload_floor_photo_hue_cnt_list,
     create_new_hue_ranges_model
 )
-import base64, datetime, cloudinary
+import datetime
 from django.db.models import Q
 
 # Create your views here.
@@ -50,8 +50,6 @@ class RoomPhotoCreateAPIView(views.APIView):
         for floor_hue_range in floor_hue_ranges:
             floor_hue_ranges_list.append(floor_hue_range.min_hue)
             floor_hue_ranges_list.append(floor_hue_range.max_hue)
-
-        print(floor_hue_ranges_list)
 
         percent_of_floors = calc_percent_of_floors(
             request.data["roomPhotoBase64Content"],

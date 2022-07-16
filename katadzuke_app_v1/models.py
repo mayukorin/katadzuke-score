@@ -3,7 +3,7 @@ from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import BaseUserManager, AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 import datetime, cloudinary
-from .room_vision import calc_percent_of_floors
+
 
 # Create your models here.
 class UserManager(BaseUserManager):
