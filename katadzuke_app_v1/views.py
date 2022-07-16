@@ -78,23 +78,24 @@ class RewardThisMonthUpdateAPIView(views.APIView):
         )
         serializer = RewardSerializer(instance=reward_this_month, data={}, partial=True)
 
-        add_amount_this_month = 0
-
-        if request.data["prev_room_photo_score"] is not None:
-            add_amount_this_month = reflect_room_photo_score_to_amount_of_money(
+        add_amount_this_month = reflect_room_photo_score_to_amount_of_money(
                 request.user.threshould_fine_score,
                 request.user.threshould_reward_score,
                 request.user.amount_of_fine,
                 request.user.amount_of_reward,
                 request.data["new_room_photo_score"],
-            ) - remove_reflection_of_room_photo_score_from_amount_of_money(
+            )
+
+        if request.data["prev_room_photo_score"] is not None:
+            add_amount_this_month -= remove_reflection_of_room_photo_score_from_amount_of_money(
                 request.user.threshould_fine_score,
                 request.user.threshould_reward_score,
                 request.user.amount_of_fine,
                 request.user.amount_of_reward,
                 request.data["prev_room_photo_score"],
             )
-
+            
+        print(add_amount_this_month)
         serializer.is_valid(raise_exception=True)
 
         serializer.save(
