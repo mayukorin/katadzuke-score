@@ -98,6 +98,31 @@ class User(AbstractUser):
         reward_this_month = Reward.objects.get(recipient=self, month=today.month)
         return reward_this_month.amount_of_money
 
+    def calc_reward_of_room_photo_score(self, room_photo_score):
+
+        reward = 0
+
+        if room_photo_score <= self.threshould_fine_score:
+            reward -= self.amount_of_fine
+        elif room_photo_score >= self.threshould_reward_score:
+            reward += self.amount_of_reward
+
+        return reward
+
+    def update_reward_of_today_of_week_room_photo_score(self, new_room_photo_score, prev_room_photo_score):
+
+        reward = self.calc_reward_of_room_photo_score(
+            room_photo_score=new_room_photo_score
+        )
+
+        if prev_room_photo_score is not None:
+            reward -= self.calc_reward_of_room_photo_score(
+                room_photo_score=prev_room_photo_score
+            )
+
+        return reward
+
+
 
 class RoomPhoto(models.Model):
 

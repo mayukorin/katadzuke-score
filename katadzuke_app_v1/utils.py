@@ -1,7 +1,7 @@
-import base64, cv2, math, cloudinary, numpy as np
+import base64, cv2, math, cloudinary, numba, numpy as np
 
-
-def calc_percent_of_floors_of_photo(base64_content, floor_hue_ranges):
+@numba.jit
+def calc_percent_of_floors_of_photo(base64_content, floor_hue_ranges_list):
 
         np_img = np.asarray(
             bytearray(base64.b64decode(base64_content.split(",")[1])), dtype="uint8"
@@ -13,9 +13,9 @@ def calc_percent_of_floors_of_photo(base64_content, floor_hue_ranges):
             for w in range(hsv.shape[1]):
                 hue_value = hsv[h, w, 0]
                 
-                for floor_hue_range in floor_hue_ranges:
-                    min_hue = floor_hue_range.min_hue
-                    max_hue = floor_hue_range.max_hue
+                for i in range(0, len(floor_hue_ranges_list), 2):
+                    min_hue = floor_hue_ranges_list[i]
+                    max_hue = floor_hue_ranges_list[i+1]
                     
                     if max_hue >= hue_value and hue_value >= min_hue:
                         total_num_of_floor_pixels += 1
@@ -41,7 +41,7 @@ def destroy_photo_from_cloudinary(photo_public_id):
 def replace_current_cloudinary_photo_with_posted_photo(public_id_of_current_cloudinary_photo, base64_content_of_posted_photo):
 
     if public_id_of_current_cloudinary_photo is not None:
-        destroy_photo_from_cloudinary(public_id=public_id_of_current_cloudinary_photo)
+        destroy_photo_from_cloudinary(photo_public_id=public_id_of_current_cloudinary_photo)
 
     public_id_of_photo_uploaded_to_cloudinary, url_of_photo_uploaded_to_cloudinary = upload_photo_to_cloudinary(
         base64_content=base64_content_of_posted_photo

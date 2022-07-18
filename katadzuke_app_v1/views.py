@@ -49,9 +49,16 @@ class RoomPhotoCreateAPIView(views.APIView):
             base64_content_of_posted_photo=request.data["roomPhotoBase64Content"],
         )
 
+        floor_hue_ranges=FloorHueRange.objects.filter(user=request.user)
+        floor_hue_ranges_list = []
+        for floor_hue_range in floor_hue_ranges:
+            floor_hue_ranges_list.append(floor_hue_range.min_hue)
+            floor_hue_ranges_list.append(floor_hue_range.max_hue)
+
+
         percent_of_floors = calc_percent_of_floors_of_photo(
             base64_content=request.data["roomPhotoBase64Content"],
-            floor_hue_ranges=FloorHueRange.objects.filter(user=request.user),
+            floor_hue_ranges_list=floor_hue_ranges_list,
         )
 
         serializer.save(
@@ -76,30 +83,12 @@ class RewardThisMonthUpdateAPIView(views.APIView):
         )
         serializer = RewardSerializer(instance=reward_this_month, data={}, partial=True)
 
-        add_amount_this_month = reflect_room_photo_score_to_amount_of_money(
-            request.user.threshould_fine_score,
-            request.user.threshould_reward_score,
-            request.user.amount_of_fine,
-            request.user.amount_of_reward,
-            request.data["new_room_photo_score"],
-        )
+        add_reward_this_month = request.user.update_reward_of_today_of_week_room_photo_score(new_room_photo_score=request.data["new_room_photo_score"], prev_room_photo_score=request.data["prev_room_photo_score"])
 
-        if request.data["prev_room_photo_score"] is not None:
-            add_amount_this_month -= (
-                remove_reflection_of_room_photo_score_from_amount_of_money(
-                    request.user.threshould_fine_score,
-                    request.user.threshould_reward_score,
-                    request.user.amount_of_fine,
-                    request.user.amount_of_reward,
-                    request.data["prev_room_photo_score"],
-                )
-            )
-
-        print(add_amount_this_month)
         serializer.is_valid(raise_exception=True)
 
         serializer.save(
-            amount_of_money=reward_this_month.amount_of_money + add_amount_this_month
+            amount_of_money=reward_this_month.amount_of_money + add_reward_this_month
         )
 
         return Response(serializer.data, status.HTTP_200_OK)
