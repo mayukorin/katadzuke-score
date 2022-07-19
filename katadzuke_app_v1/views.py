@@ -21,9 +21,10 @@ from .room_vision import (
 )
 from .utils import (
     calc_percent_of_floors_of_photo,
+    calc_percent_of_floors_of_photo2,
     replace_current_cloudinary_photo_with_posted_photo,
 )
-import datetime
+import datetime, base64, cv2, time
 from django.db.models import Q
 
 # Create your views here.
@@ -49,17 +50,48 @@ class RoomPhotoCreateAPIView(views.APIView):
             base64_content_of_posted_photo=request.data["roomPhotoBase64Content"],
         )
 
+        
+    
         floor_hue_ranges=FloorHueRange.objects.filter(user=request.user)
         floor_hue_ranges_list = []
         for floor_hue_range in floor_hue_ranges:
             floor_hue_ranges_list.append(floor_hue_range.min_hue)
             floor_hue_ranges_list.append(floor_hue_range.max_hue)
-
-
+        
+        numpy_array = np.array(floor_hue_ranges_list)
+        
+        np_img = np.asarray(
+            bytearray(base64.b64decode(request.data["roomPhotoBase64Content"].split(",")[1])), dtype="uint8"
+        )
+       
+        time_sta3 = time.time()
+        hsv = cv2.cvtColor(cv2.imdecode(np_img, cv2.IMREAD_COLOR), cv2.COLOR_BGR2HSV) # ボトルネック
+        time_end3 = time.time()
+        # print(type(hsv))
+        # print(type(hsv[0, 0, 0]))
+        
+        tim3 = time_end3- time_sta3
+        # print(tim1) # 2.9087066650390625e-05
+        # print(tim2) # 0.016383647918701172
+        print(tim3) # 1.6960880756378174
+        time_sta1 = time.time()
+        percent_of_floors = calc_percent_of_floors_of_photo2(
+            hsv=hsv,
+            floor_hue_ranges_list=numpy_array,
+        )
+        time_end1 = time.time()
+        print(time_end1- time_sta1)
+        '''
+        time_sta1 = time.time()
         percent_of_floors = calc_percent_of_floors_of_photo(
             base64_content=request.data["roomPhotoBase64Content"],
             floor_hue_ranges_list=floor_hue_ranges_list,
         )
+        time_end1 = time.time()
+        print(time_end1- time_sta1)
+        '''
+        
+
 
         serializer.save(
             photo_public_id=public_id_of_photo_uploaded_to_cloudinary,
