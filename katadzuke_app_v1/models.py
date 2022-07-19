@@ -38,6 +38,14 @@ class UserManager(BaseUserManager):
         user.full_score_photo = room_photo
         user.save()
 
+        floor_hue_range = FloorHueRange()
+        floor_hue_range.user = user
+        floor_hue_range.save()
+
+        floor_photo = FloorPhoto()
+        floor_photo.photo_owner = user
+        floor_photo.save()
+
         reward, created = Reward.objects.get_or_create(
             month=today.month, recipient=user
         )
