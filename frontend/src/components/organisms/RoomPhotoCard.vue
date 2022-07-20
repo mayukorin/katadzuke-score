@@ -102,6 +102,8 @@ export default {
       }
     },
     selectedFile(file) {
+      console.log("uploadは？");
+      console.log(this.isUploading);
       if (!this.isUploading) {
         this.isUploading = true;
         if (file != null) {

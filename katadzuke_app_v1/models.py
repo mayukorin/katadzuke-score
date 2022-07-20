@@ -11,9 +11,7 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
-        print("ok1")
         user.save(using=self._db)
-        print("ok2")
 
         today = datetime.date.today()
 
@@ -24,18 +22,16 @@ class UserManager(BaseUserManager):
             room_photo.filming_date = date
             room_photo.room_owner = user
             room_photo.save()
-            print(date)
-            print(date.weekday())
 
             if date.weekday() >= 6:
                 # 日曜日まで作ったら終わり
                 break
 
-        room_photo = RoomPhoto()
-        room_photo.filming_date = today
-        room_photo.room_owner = user
-        room_photo.save()
-        user.full_score_photo = room_photo
+        full_score_room_photo = RoomPhoto()
+        full_score_room_photo.filming_date = today
+        full_score_room_photo.room_owner = user
+        full_score_room_photo.save()
+        user.full_score_photo = full_score_room_photo
         user.save()
 
         floor_hue_range = FloorHueRange()
