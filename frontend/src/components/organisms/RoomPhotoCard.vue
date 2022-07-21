@@ -8,7 +8,7 @@
               {{ roomPhoto.filming_date }}({{ dayOfWeek }})
             </v-card-title>
             <v-card-text>
-              <div v-if="roomPhoto.photo_url == null">
+              <div v-if="roomPhoto.photo_url === null">
                 片付け具合を採点するには部屋の写真を投稿してください
               </div>
               <div v-else class="text-h5">
@@ -101,10 +101,9 @@ export default {
         return photo_url;
       }
     },
-    handleClick() {
-      this.$refs.input[0].click();
-    },
     selectedFile(file) {
+      console.log("uploadは？");
+      console.log(this.isUploading);
       if (!this.isUploading) {
         this.isUploading = true;
         if (file != null) {

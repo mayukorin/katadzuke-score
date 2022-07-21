@@ -8,7 +8,7 @@
       <FullScoreRoomUploadForm
         @upload-button-click="handleUpload"
         :is-loading="isLoading"
-        :full-score-room-photo-url="fullScoreRoomPhotoURL"
+        :full-score-room-photo-url="fullScoreRoomPhoto.photo_url"
       />
     </v-card-text>
   </v-card>
@@ -32,6 +32,7 @@ export default {
       return this.$store
         .dispatch("roomPhotos/uploadFullScoreRoomPhoto", {
           roomPhotoBase64Content: base64FullScoreRoomPhoto,
+          roomPhotoPk: this.fullScoreRoomPhoto.pk,
         })
         .then(() => {
           let uploadSuccessMessage = "100点満点の部屋の写真を変更しました";
@@ -45,10 +46,10 @@ export default {
     },
   },
   computed: {
-    fullScoreRoomPhotoURL() {
+    fullScoreRoomPhoto() {
       console.log("change");
-      console.log(this.$store.state.roomPhotos.fullScoreRoomPhotoURL);
-      return this.$store.state.roomPhotos.fullScoreRoomPhotoURL;
+      console.log(this.$store.state.roomPhotos.fullScoreRoomPhoto);
+      return this.$store.state.roomPhotos.fullScoreRoomPhoto;
     },
   },
 };

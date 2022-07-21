@@ -61,31 +61,19 @@ export default {
       type: Boolean,
       default: false,
     },
-    threshouldRewardScore: {
-      type: Number,
-      default: 0,
-    },
-    threshouldFineScore: {
-      type: Number,
-      default: 0,
-    },
-    amountOfReward: {
-      type: Number,
-      default: 0,
-    },
-    amountOfFine: {
-      type: Number,
-      default: 0,
+    reward: {
+      type: Object,
+      default: null,
     },
   },
   data() {
     return {
       isUploading: false,
       form: {
-        editedThreshouldRewardScore: this.threshouldRewardScore,
-        editedThreshouldFineScore: this.threshouldFineScore,
-        editedAmountOfReward: this.amountOfReward,
-        editedAmountOfFine: this.amountOfFine,
+        editedThreshouldRewardScore: this.reward.threshouldRewardScore,
+        editedThreshouldFineScore: this.reward.threshouldFineScore,
+        editedAmountOfReward: this.reward.amountOfReward,
+        editedAmountOfFine: this.reward.amountOfFine,
       },
     };
   },

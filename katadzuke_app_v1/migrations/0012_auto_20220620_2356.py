@@ -7,13 +7,18 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katadzuke_app_v1', '0011_auto_20220619_1200'),
+        ("katadzuke_app_v1", "0011_auto_20220619_1200"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='full_score_photo',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='katadzuke_app_v1.RoomPhoto'),
+            model_name="user",
+            name="full_score_photo",
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="katadzuke_app_v1.RoomPhoto",
+            ),
         ),
     ]

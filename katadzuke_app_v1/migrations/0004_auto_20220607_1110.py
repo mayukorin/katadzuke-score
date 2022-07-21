@@ -6,22 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katadzuke_app_v1', '0003_auto_20220607_0500'),
+        ("katadzuke_app_v1", "0003_auto_20220607_0500"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='roomphoto',
-            name='photo',
+            model_name="roomphoto",
+            name="photo",
         ),
         migrations.AddField(
-            model_name='roomphoto',
-            name='photo_public_id',
+            model_name="roomphoto",
+            name="photo_public_id",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name='roomphoto',
-            name='photo_url',
+            model_name="roomphoto",
+            name="photo_url",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
     ]

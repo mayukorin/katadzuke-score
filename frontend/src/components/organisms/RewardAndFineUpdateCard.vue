@@ -6,10 +6,7 @@
     <v-card-text>
       <RewardAndFineUpdateForm
         :is-loading="isLoading"
-        :threshould-reward-score="threshouldRewardScore"
-        :threshould-fine-score="threshouldFineScore"
-        :amount-of-reward="amountOfReward"
-        :amount-of-fine="amountOfFine"
+        :reward="reward"
         @update-button-click="handleUpdate"
       />
     </v-card-text>
@@ -39,27 +36,16 @@ export default {
           this.$store.dispatch("flashMessage/setSuccessMessage", {
             messages: [updateSuccessMessage],
           });
-          const next = "/";
-          console.log("replace");
-          this.$router.replace(next);
         })
         .finally(() => {
           this.isLoading = false;
         });
     },
   },
+  // TODO: 一つにまとめる
   computed: {
-    threshouldRewardScore() {
-      return this.$store.state.reward.threshouldRewardScore;
-    },
-    threshouldFineScore() {
-      return this.$store.state.reward.threshouldFineScore;
-    },
-    amountOfReward() {
-      return this.$store.state.reward.amountOfReward;
-    },
-    amountOfFine() {
-      return this.$store.state.reward.amountOfFine;
+    reward() {
+      return this.$store.state.reward;
     },
   },
 };

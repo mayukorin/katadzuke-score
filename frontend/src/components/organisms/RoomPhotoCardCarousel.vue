@@ -1,6 +1,17 @@
 <template>
   <div>
-    <v-carousel v-model="photoIndex" class="my-4" :height="cardHeight + 60">
+    <v-progress-circular
+      indeterminate
+      color="primary"
+      size="70"
+      v-show="isLoading"
+    ></v-progress-circular>
+    <v-carousel
+      v-model="photoIndex"
+      class="my-4"
+      :height="cardHeight + 60"
+      v-show="!isLoading"
+    >
       <RoomPhotoCard
         v-for="(roomPhoto, index) in roomPhotos"
         :key="roomPhoto.pk"
@@ -26,13 +37,10 @@ export default {
       photoIndex: 0,
       cardHeight: 0,
       dayOfWeeks: ["月", "火", "水", "木", "金", "土", "日"],
-      createdDoneFlag: false,
+      isLoading: true,
     };
   },
   computed: {
-    isSignIn() {
-      return false;
-    },
     roomPhotos() {
       console.log(this.$store.state.roomPhotos.roomPhotos);
       return this.$store.state.roomPhotos.roomPhotos;
@@ -51,7 +59,7 @@ export default {
       console.log("created");
       console.log(this.$refs.roomPhotoCard[0]);
       this.$refs.roomPhotoCard[0].observeCard();
-      this.createdDoneFlag = true;
+      this.isLoading = false;
     });
   },
   watch: {

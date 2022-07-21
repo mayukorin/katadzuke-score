@@ -12,9 +12,6 @@ const authModule = {
     isSignIn: false,
   },
   mutations: {
-    setRewardThisMonth(state, payload) {
-      state.rewardThisMonth = payload.amount_of_money;
-    },
     clear(state) {
       (state.email = ""), (state.username = "");
       state.isSignIn = false;
@@ -23,6 +20,9 @@ const authModule = {
       console.log("setAll");
       state.email = payload.email;
       state.username = payload.username;
+      state.isSignIn = true;
+    },
+    setIsSignIn(state) {
       state.isSignIn = true;
     },
   },
@@ -49,20 +49,15 @@ const authModule = {
         return response;
       });
     },
-    renew() {
+    renew(context) {
       console.log("renew");
-      return api.get("/auth/users/me");
+      return api.get("/auth/users/me").then(() => {
+        context.commit("setIsSignIn");
+      });
     },
     signout(context) {
       localStorage.removeItem("access");
       context.commit("clear");
-    },
-    getRewardThisMonth(context) {
-      return api.get("/reward-this-month/").then((response) => {
-        console.log(response.data);
-        context.commit("setRewardThisMonth", response.data);
-        return response.data;
-      });
     },
     updateUserInfo(context, payload) {
       console.log(payload);
@@ -71,7 +66,7 @@ const authModule = {
         url: "/user-info-update/",
         data: payload,
       }).then((response) => {
-        return context.commit("setAll", response.data);
+        return context.commit("reward/setAll", response.data, { root: true });
       });
     },
     getUserInfo(context) {
@@ -79,6 +74,13 @@ const authModule = {
         console.log("get user info");
         context.commit("setAll", response.data);
         context.commit("reward/setAll", response.data, { root: true });
+        context.commit(
+          "roomPhotos/setFullScoreRoomPhoto",
+          response.data.full_score_photo,
+          {
+            root: true,
+          }
+        );
       });
     },
   },
@@ -88,7 +90,7 @@ const roomPhotoModule = {
   namespaced: true,
   state: {
     roomPhotos: [],
-    fullScoreRoomPhotoURL: "",
+    fullScoreRoomPhoto: null,
   },
   mutations: {
     set(state, payload) {
@@ -103,13 +105,14 @@ const roomPhotoModule = {
       roomPhoto.photo_url = payload.photo_url;
       roomPhoto.katadzuke_score = payload.katadzuke_score;
     },
-    setFullScoreRoomPhotoURL(state, full_score_photo_url) {
-      state.fullScoreRoomPhotoURL = full_score_photo_url;
-      console.log(state.fullScoreRoomPhotoURL);
+    setFullScoreRoomPhoto(state, full_score_photo) {
+      state.fullScoreRoomPhoto = full_score_photo;
+      console.log("full score");
+      console.log(state.fullScoreRoomPhoto);
     },
     clear(state) {
       state.roomPhotos = [];
-      state.fullScoreRoomPhotoURL = "";
+      state.fullScoreRoomPhoto = null;
     },
   },
   actions: {
@@ -139,20 +142,19 @@ const roomPhotoModule = {
     uploadFullScoreRoomPhoto(context, payload) {
       return api({
         method: "post",
-        url: "/room-photos/full-score/",
+        url: "/room-photos/" + payload.roomPhotoPk + "/room-photo-upload/",
         data: {
           roomPhotoBase64Content: payload.roomPhotoBase64Content,
         },
       }).then((response) => {
         console.log(response);
-        context.commit("setFullScoreRoomPhotoURL", response.data.photo_url);
+        context.commit("setFullScoreRoomPhoto", response.data);
       });
     },
-    setFullScoreRoomPhotoURL(context, payload) {
-      return context.commit(
-        "setFullScoreRoomPhotoURL",
-        payload.full_score_photo.photo_url
-      );
+    setFullScoreRoomPhoto(context, payload) {
+      console.log("setFullScore");
+      console.log(payload.full_score_photo);
+      return context.commit("setFullScoreRoomPhoto", payload.full_score_photo);
     },
     clear(context) {
       return context.commit("clear");
@@ -197,6 +199,44 @@ const rewardModule = {
         context.commit("setAmountOfRewardThisMonth", {
           amount_of_reward_this_month: response.data.amount_of_money,
         });
+      });
+    },
+  },
+};
+
+const floorPhotoModule = {
+  namespaced: true,
+  state: {
+    floorPhoto: null,
+  },
+  mutations: {
+    set(state, payload) {
+      state.floorPhoto = payload;
+    },
+    clear(state) {
+      state.floorPhoto = null;
+    },
+  },
+  actions: {
+    uploadFloorPhoto(context, payload) {
+      return api({
+        method: "post",
+        url: "/floor-photos/" + payload.floorPhotoPk + "/floor-photo-upload/",
+        data: {
+          floorPhotoBase64Content: payload.floorPhotoBase64Content,
+        },
+      }).then((response) => {
+        console.log(response);
+        context.commit("set", response.data);
+      });
+    },
+    get(context) {
+      return api({
+        method: "get",
+        url: "/floor-photos/",
+      }).then((response) => {
+        console.log(response);
+        context.commit("set", response.data);
       });
     },
   },
@@ -254,6 +294,7 @@ const store = new Vuex.Store({
     auth: authModule,
     reward: rewardModule,
     flashMessage: flashMessageModule,
+    floorPhoto: floorPhotoModule,
   },
 });
 

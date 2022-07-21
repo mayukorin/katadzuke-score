@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katadzuke_app_v1', '0006_reward'),
+        ("katadzuke_app_v1", "0006_reward"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='full_score_photo_public_id',
+            model_name="user",
+            name="full_score_photo_public_id",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name='user',
-            name='full_score_photo_url',
+            model_name="user",
+            name="full_score_photo_url",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
     ]

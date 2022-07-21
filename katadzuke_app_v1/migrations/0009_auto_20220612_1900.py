@@ -7,28 +7,40 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katadzuke_app_v1', '0008_user_full_score_room_percent_of_floors'),
+        ("katadzuke_app_v1", "0008_user_full_score_room_percent_of_floors"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='amount_of_fine',
+            model_name="user",
+            name="amount_of_fine",
             field=models.IntegerField(default=500),
         ),
         migrations.AddField(
-            model_name='user',
-            name='amount_of_reward',
+            model_name="user",
+            name="amount_of_reward",
             field=models.IntegerField(default=500),
         ),
         migrations.AddField(
-            model_name='user',
-            name='threshould_fine_score',
-            field=models.IntegerField(default=30, validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)]),
+            model_name="user",
+            name="threshould_fine_score",
+            field=models.IntegerField(
+                default=30,
+                validators=[
+                    django.core.validators.MinValueValidator(0),
+                    django.core.validators.MaxValueValidator(100),
+                ],
+            ),
         ),
         migrations.AddField(
-            model_name='user',
-            name='threshould_reward_score',
-            field=models.IntegerField(default=70, validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)]),
+            model_name="user",
+            name="threshould_reward_score",
+            field=models.IntegerField(
+                default=70,
+                validators=[
+                    django.core.validators.MinValueValidator(0),
+                    django.core.validators.MaxValueValidator(100),
+                ],
+            ),
         ),
     ]

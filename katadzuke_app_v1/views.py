@@ -1,85 +1,129 @@
 from importlib.util import spec_from_file_location
 from logging import raiseExceptions
-from .serializers import UserSerializer, RoomPhotoSerializer, RewardSerializer
-from .models import RoomPhoto, Reward
+from .serializers import (
+    UserSerializer,
+    RoomPhotoSerializer,
+    RewardSerializer,
+    FloorPhotoSerializer,
+)
+from .models import RoomPhoto, Reward, FloorPhoto, FloorHueRange
 from rest_framework import views, status
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 import numpy as np
-from .room_vision import calc_percent_of_floors, upload_room_photo_to_cloudinary, destroy_room_photo_from_cloudinary
-import base64, datetime, cloudinary
+from .room_vision import (
+    reflect_room_photo_score_to_amount_of_money,
+    remove_reflection_of_room_photo_score_from_amount_of_money,
+    calc_upload_floor_photo_hue_cnt_list,
+    merge_floor_hue_ranges_into_upload_floor_photo_hue_cnt_list,
+    create_new_hue_ranges_model,
+)
+from .utils import (
+    calc_percent_of_floors_of_photo,
+    calc_percent_of_floors_of_photo2,
+    replace_current_cloudinary_photo_with_posted_photo,
+)
+import datetime, base64, cv2, time
 from django.db.models import Q
+
 # Create your views here.
 
-THRESHOULD_REWARD_SCORE = 60
-THRESHOULD_FINE_SCORE = 20
-
-AMOUNT_OF_REWARD = 100
-AMOUNT_OF_FINE = 200
 
 class RoomPhotoCreateAPIView(views.APIView):
 
     parser_class = [JSONParser, MultiPartParser]
 
     def post(self, request, pk, *args, **kwargs):
-        
+
         # TODO: serializer 使うように変更．serializer.save()のところに入れれば OK
         # 認可を後で追加
         room_photo = RoomPhoto.objects.get(pk=pk)
         serializer = RoomPhotoSerializer(instance=room_photo, data={}, partial=True)
         serializer.is_valid(raise_exception=True)
 
-        if room_photo.photo_public_id is not None:
+        (
+            public_id_of_photo_uploaded_to_cloudinary,
+            url_of_photo_uploaded_to_cloudinary,
+        ) = replace_current_cloudinary_photo_with_posted_photo(
+            public_id_of_current_cloudinary_photo=room_photo.photo_public_id,
+            base64_content_of_posted_photo=request.data["roomPhotoBase64Content"],
+        )
 
-            destroy_room_photo_from_cloudinary(room_photo.photo_public_id)
-           
-        public_id, url = upload_room_photo_to_cloudinary(request.data["roomPhotoBase64Content"])
-        percent_of_floors = calc_percent_of_floors(request.data["roomPhotoBase64Content"])
         
-        serializer.save(photo_public_id=public_id, percent_of_floors=percent_of_floors, photo_url=url)
+    
+        floor_hue_ranges=FloorHueRange.objects.filter(user=request.user)
+        floor_hue_ranges_list = []
+        for floor_hue_range in floor_hue_ranges:
+            floor_hue_ranges_list.append(floor_hue_range.min_hue)
+            floor_hue_ranges_list.append(floor_hue_range.max_hue)
+        
+        numpy_array = np.array(floor_hue_ranges_list)
+        
+        np_img = np.asarray(
+            bytearray(base64.b64decode(request.data["roomPhotoBase64Content"].split(",")[1])), dtype="uint8"
+        )
+       
+        time_sta3 = time.time()
+        hsv = cv2.cvtColor(cv2.imdecode(np_img, cv2.IMREAD_COLOR), cv2.COLOR_BGR2HSV) # ボトルネック
+        time_end3 = time.time()
+        # print(type(hsv))
+        # print(type(hsv[0, 0, 0]))
+        
+        tim3 = time_end3- time_sta3
+        # print(tim1) # 2.9087066650390625e-05
+        # print(tim2) # 0.016383647918701172
+        print(tim3) # 1.6960880756378174
+        time_sta1 = time.time()
+        percent_of_floors = calc_percent_of_floors_of_photo2(
+            hsv=hsv,
+            floor_hue_ranges_list=numpy_array,
+        )
+        time_end1 = time.time()
+        print(time_end1- time_sta1)
+        '''
+        time_sta1 = time.time()
+        percent_of_floors = calc_percent_of_floors_of_photo(
+            base64_content=request.data["roomPhotoBase64Content"],
+            floor_hue_ranges_list=floor_hue_ranges_list,
+        )
+        time_end1 = time.time()
+        print(time_end1- time_sta1)
+        '''
+        
 
-        return Response(serializer.data, status.HTTP_201_CREATED)
+
+        serializer.save(
+            photo_public_id=public_id_of_photo_uploaded_to_cloudinary,
+            percent_of_floors=percent_of_floors,
+            photo_url=url_of_photo_uploaded_to_cloudinary,
+        )
+
+        return Response(serializer.data, status.HTTP_200_OK)
+
 
 class RewardThisMonthUpdateAPIView(views.APIView):
 
     parser_class = [JSONParser, MultiPartParser]
 
-    #TODO: pk で更新できるように変更
+    # TODO: pk で更新できるように変更
     def post(self, request, *args, **kwargs):
 
         today = datetime.date.today()
-        reward_this_month = Reward.objects.get(recipient=request.user, month=today.month)
-        print(request.data["prev_room_photo_score"])
-        print(request.data["new_room_photo_score"])
-        if request.data["prev_room_photo_score"] is not None:
-            reward_this_month = reward_this_month.remove_reflection_of_room_photo_score_from_amount_of_money(request.data["prev_room_photo_score"])
-        reward_this_month.reflect_room_photo_score_to_amount_of_money(request.data["new_room_photo_score"])
+        reward_this_month = Reward.objects.get(
+            recipient=request.user, month=today.month
+        )
+        serializer = RewardSerializer(instance=reward_this_month, data={}, partial=True)
 
-        serializer = RewardSerializer(instance=reward_this_month)
-        return Response(serializer.data, status.HTTP_201_CREATED)
+        add_reward_this_month = request.user.update_reward_of_today_of_week_room_photo_score(new_room_photo_score=request.data["new_room_photo_score"], prev_room_photo_score=request.data["prev_room_photo_score"])
 
+        serializer.is_valid(raise_exception=True)
 
+        serializer.save(
+            amount_of_money=reward_this_month.amount_of_money + add_reward_this_month
+        )
 
-
-class FullScoreRoomPhotoUploadAPIView(views.APIView):
-
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-
-        signin_user = request.user
-        if signin_user.full_score_photo.photo_public_id is not None:
-            signin_user.full_score_photo.destroy_room_photo_from_cloudinary()
-
-
-        public_id, url = upload_room_photo_to_cloudinary(request.data["roomPhotoBase64Content"])
-        percent_of_floors = calc_percent_of_floors(request.data["roomPhotoBase64Content"])
-        signin_user.full_score_photo.set_percent_of_floors_and_photo_public_id_and_photo_url(percent_of_floors, public_id, url)
-
-        serializer = RoomPhotoSerializer(instance=signin_user.full_score_photo)
-
-        return Response(serializer.data, status.HTTP_201_CREATED) # TODO: CREATED?
+        return Response(serializer.data, status.HTTP_200_OK)
 
 
 class RoomPhotoListAPIView(views.APIView):
@@ -88,23 +132,75 @@ class RoomPhotoListAPIView(views.APIView):
 
     def get(self, request, *arga, **kwargs):
 
-        user_room_photos = RoomPhoto.objects.filter(room_owner=request.user).filter(~Q(pk=request.user.full_score_photo.pk))
+        user_room_photos = RoomPhoto.objects.filter(room_owner=request.user).filter(
+            ~Q(pk=request.user.full_score_photo.pk)
+        )
         serializer = RoomPhotoSerializer(instance=user_room_photos, many=True)
 
         return Response(serializer.data, status.HTTP_200_OK)
 
 
-class UserCreateAPIView(views.APIView):
+class FloorPhotoGetAPIView(views.APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *arga, **kwargs):
+
+        floor_photo = FloorPhoto.objects.get(photo_owner=request.user)
+        print(floor_photo)
+        serializer = FloorPhotoSerializer(instance=floor_photo)
+
+        return Response(serializer.data, status.HTTP_200_OK)
 
 
-    def post(self, request, *args, **kwargs):
-        print("serializer 前")
-        serializer = UserSerializer(data=request.data)
-        print("serializer 後")
+class FloorPhotoUploadAPIView(views.APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk, *args, **kwargs):
+
+        # TODO: 認可追加
+        floor_photo = FloorPhoto.objects.get(pk=pk)
+        serializer = FloorPhotoSerializer(instance=floor_photo, data={}, partial=True)
         serializer.is_valid(raise_exception=True)
-        print("serializer 後")
+
+        (
+            public_id_of_photo_uploaded_to_cloudinary,
+            url_of_photo_uploaded_to_cloudinary,
+        ) = replace_current_cloudinary_photo_with_posted_photo(
+            public_id_of_current_cloudinary_photo=floor_photo.photo_public_id,
+            base64_content_of_posted_photo=request.data["floorPhotoBase64Content"],
+        )
+
+        serializer.save(
+            photo_public_id=public_id_of_photo_uploaded_to_cloudinary,
+            photo_url=url_of_photo_uploaded_to_cloudinary,
+        )
+
+        floor_hue_ranges = FloorHueRange.objects.filter(user=request.user)
+        hue_floor_pixel_cnt_list = (
+            merge_floor_hue_ranges_into_upload_floor_photo_hue_cnt_list(
+                floor_hue_ranges,
+                calc_upload_floor_photo_hue_cnt_list(
+                    request.data["floorPhotoBase64Content"]
+                ),
+            )
+        )
+
+        floor_hue_ranges.delete()
+
+        create_new_hue_ranges_model(hue_floor_pixel_cnt_list, request.user)
+
+        return Response(serializer.data, status.HTTP_200_OK)
+
+
+class UserCreateAPIView(views.APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = UserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status.HTTP_201_CREATED)
+
 
 class UserInfoGetAPIView(views.APIView):
 
@@ -118,27 +214,17 @@ class UserInfoGetAPIView(views.APIView):
 
         return Response(serializer.data, status.HTTP_200_OK)
 
+
 class UserInfoUpdateAPIView(views.APIView):
 
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, *args, **kwargs):
 
-        print(request.data)
-        serializer = UserSerializer(instance=request.user, data=request.data, partial=True)
+        serializer = UserSerializer(
+            instance=request.user, data=request.data, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(serializer.data, status.HTTP_200_OK)
-
-
-class RewardThisMonthGetAPIView(views.APIView):
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-
-        today = datetime.date.today()
-        reward_this_month = Reward.objects.get(recipient=request.user, month=today.month)
-        serializer = RewardSerializer(instance=reward_this_month)
         return Response(serializer.data, status.HTTP_200_OK)

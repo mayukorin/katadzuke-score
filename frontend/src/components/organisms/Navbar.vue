@@ -46,6 +46,11 @@
               <v-list-item-title>100点満点の部屋登録</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
+          <v-list-item router to="/floor-photo-upload">
+            <v-list-item-content>
+              <v-list-item-title>床の写真登録</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
           <v-list-item router to="/fine-and-reward-update">
             <v-list-item-content>
               <v-list-item-title>ご褒美と罰金の設定</v-list-item-title>
