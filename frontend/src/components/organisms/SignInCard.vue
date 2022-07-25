@@ -21,9 +21,11 @@ export default {
       isLoading: false,
     };
   },
+  /*
   created() {
     this.$store.dispatch("flashMessage/clearMessages");
   },
+  */
   methods: {
     handleSignin(authInfo) {
       this.isLoading = true;
